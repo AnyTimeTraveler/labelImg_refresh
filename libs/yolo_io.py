@@ -18,12 +18,17 @@ class YOLOWriter:
         self.box_list = []
         self.local_img_path = local_img_path
         self.verified = False
+        self.class_list = []  # Ensures unique class names
 
     def add_bnd_box(self, x_min, y_min, x_max, y_max, name, difficult):
-        bnd_box = {'xmin': x_min, 'ymin': y_min, 'xmax': x_max, 'ymax': y_max}
-        bnd_box['name'] = name
-        bnd_box['difficult'] = difficult
-        self.box_list.append(bnd_box)
+        if x_min >= x_max or y_min >= y_max:
+            raise ValueError("Invalid bounding box dimensions")
+        if name not in self.class_list:
+            self.class_list.append(name)
+        self.box_list.append({
+            'xmin': x_min, 'ymin': y_min, 'xmax': x_max,
+            'ymax': y_max, 'name': name, 'difficult': difficult
+        })
 
     def bnd_box_to_yolo_line(self, box, class_list=[]):
         x_min = box['xmin']
@@ -47,6 +52,10 @@ class YOLOWriter:
         return class_index, x_center, y_center, w, h
 
     def save(self, class_list=[], target_file=None):
+        if target_file is None:
+            target_file = self.filename + '.txt'
+
+        class_list = list(set(class_list))  # Ensure class_list has unique values
 
         out_file = None  # Update yolo .txt
         out_class_file = None   # Update class list .txt
@@ -54,12 +63,12 @@ class YOLOWriter:
         if target_file is None:
             out_file = open(
             self.filename + TXT_EXT, 'w', encoding=ENCODE_METHOD)
-            classes_file = os.path.join(os.path.dirname(os.path.abspath(self.filename)), "classes.txt")
+            classes_file = os.path.join(os.path.dirname(os.path.abspath(self.filename)), "labels.txt")
             out_class_file = open(classes_file, 'w')
 
         else:
             out_file = codecs.open(target_file, 'w', encoding=ENCODE_METHOD)
-            classes_file = os.path.join(os.path.dirname(os.path.abspath(target_file)), "classes.txt")
+            classes_file = os.path.join(os.path.dirname(os.path.abspath(target_file)), "labels.txt")
             out_class_file = open(classes_file, 'w')
 
 
@@ -96,7 +105,6 @@ class YoloReader:
 
         classes_file = open(self.class_list_path, 'r')
         self.classes = classes_file.read().strip('\n').split('\n')
-
         # print (self.classes)
 
         img_size = [image.height(), image.width(),

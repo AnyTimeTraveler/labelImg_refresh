@@ -1,15 +1,10 @@
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
 from libs.utils import new_icon, label_validator, trimmed
 
 BB = QDialogButtonBox
-
 
 class LabelDialog(QDialog):
 
@@ -22,7 +17,7 @@ class LabelDialog(QDialog):
         self.edit.editingFinished.connect(self.post_process)
 
         model = QStringListModel()
-        model.setStringList(list_item)
+        model.setStringList(list_item or [])  # Avoid mutable defaults
         completer = QCompleter()
         completer.setModel(model)
         self.edit.setCompleter(completer)
@@ -48,7 +43,11 @@ class LabelDialog(QDialog):
         self.setLayout(layout)
 
     def validate(self):
-        if trimmed(self.edit.text()):
+        trimmed_text = trimmed(self.edit.text())
+        if not trimmed_text:
+            QMessageBox.warning(self, "Invalid Input", "Label cannot be empty.")
+            return
+        if trimmed_text and trimmed_text not in self.parent().label_hist:
             self.accept()
 
     def post_process(self):
@@ -82,7 +81,7 @@ class LabelDialog(QDialog):
             if cursor_pos.x() > max_global.x():
                 cursor_pos.setX(max_global.x())
             if cursor_pos.y() > max_global.y():
-                cursor_pos.setY(max_global.y())
+                cursor_pos.setY(max_global.y()-100)
             self.move(cursor_pos)
         return trimmed(self.edit.text()) if self.exec_() else None
 

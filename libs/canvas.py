@@ -1,13 +1,6 @@
-
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-
-# from PyQt4.QtOpenGL import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
 from libs.shape import Shape
 from libs.utils import distance
@@ -125,8 +118,7 @@ class Canvas(QWidget):
                 # Display annotation width and height while drawing
                 current_width = abs(self.current[0].x() - pos.x())
                 current_height = abs(self.current[0].y() - pos.y())
-                self.parent().window().label_coordinates.setText(
-                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
+                self.parent().window().label_coordinates.setText('Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
 
                 color = self.drawing_line_color
                 if self.out_of_pixmap(pos):
@@ -164,19 +156,8 @@ class Canvas(QWidget):
             self.repaint()
             return
 
-        # Polygon copy moving.
-        if Qt.RightButton & ev.buttons():
-            if self.selected_shape_copy and self.prev_point:
-                self.override_cursor(CURSOR_MOVE)
-                self.bounded_move_shape(self.selected_shape_copy, pos)
-                self.repaint()
-            elif self.selected_shape:
-                self.selected_shape_copy = self.selected_shape.copy()
-                self.repaint()
-            return
-
         # Polygon/Vertex moving.
-        if Qt.LeftButton & ev.buttons():
+        if bool(Qt.LeftButton) & bool(ev.buttons()):
             if self.selected_vertex():
                 self.bounded_move_vertex(pos)
                 self.shapeMoved.emit()
@@ -188,7 +169,7 @@ class Canvas(QWidget):
                 current_width = abs(point1.x() - point3.x())
                 current_height = abs(point1.y() - point3.y())
                 self.parent().window().label_coordinates.setText(
-                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
+                    'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             elif self.selected_shape and self.prev_point:
                 self.override_cursor(CURSOR_MOVE)
                 self.bounded_move_shape(self.selected_shape, pos)
@@ -201,13 +182,24 @@ class Canvas(QWidget):
                 current_width = abs(point1.x() - point3.x())
                 current_height = abs(point1.y() - point3.y())
                 self.parent().window().label_coordinates.setText(
-                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
+                    'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             else:
                 # pan
                 delta = ev.pos() - self.pan_initial_pos
                 self.scrollRequest.emit(delta.x(), Qt.Horizontal)
                 self.scrollRequest.emit(delta.y(), Qt.Vertical)
                 self.update()
+            return
+
+        # Polygon copy moving.
+        if bool(Qt.RightButton) & bool(ev.buttons()):
+            if self.selected_shape_copy and self.prev_point:
+                self.override_cursor(CURSOR_MOVE)
+                self.bounded_move_shape(self.selected_shape_copy, pos)
+                self.repaint()
+            elif self.selected_shape:
+                self.selected_shape_copy = self.selected_shape.copy()
+                self.repaint()
             return
 
         # Just hovering over the canvas, 2 possibilities:
@@ -266,9 +258,14 @@ class Canvas(QWidget):
                 self.prev_point = pos
 
                 if selection is None:
-                    # pan
-                    QApplication.setOverrideCursor(QCursor(Qt.OpenHandCursor))
-                    self.pan_initial_pos = ev.pos()
+                    index = self.h_shape.nearest_vertex(pos, self.epsilon) if self.h_shape else None
+                    if index is not None:
+                        self.h_vertex = index
+                        self.h_shape = self.h_shape
+                        self.repaint()
+                    else:
+                        QApplication.setOverrideCursor(QCursor(Qt.OpenHandCursor))
+                        self.pan_initial_pos = ev.pos()
 
         elif ev.button() == Qt.RightButton and self.editing():
             self.select_shape_point(pos)
@@ -289,13 +286,14 @@ class Canvas(QWidget):
                 self.override_cursor(CURSOR_POINT)
             else:
                 self.override_cursor(CURSOR_GRAB)
+            self.repaint()
         elif ev.button() == Qt.LeftButton:
             pos = self.transform_pos(ev.pos())
             if self.drawing():
                 self.handle_drawing(pos)
             else:
-                # pan
                 QApplication.restoreOverrideCursor()
+                self.repaint()
 
     def end_move(self, copy=False):
         assert self.selected_shape and self.selected_shape_copy
@@ -419,6 +417,7 @@ class Canvas(QWidget):
             shift_pos = pos - point
 
         shape.move_vertex_by(index, shift_pos)
+        self.repaint()
 
         left_index = (index + 1) % 4
         right_index = (index + 3) % 4
@@ -739,10 +738,11 @@ class Canvas(QWidget):
         self.de_select_shape()
         self.un_highlight()
         self.selected_shape_copy = None
+        self.parent().window().set_dirty()
 
         self.restore_cursor()
         self.pixmap = None
         self.update()
-
+    
     def set_drawing_shape_to_square(self, status):
         self.draw_square = status

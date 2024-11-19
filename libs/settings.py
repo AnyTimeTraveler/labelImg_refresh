@@ -1,7 +1,6 @@
 import os
 import pickle
 
-
 class Settings(object):
     def __init__(self):
         # Be default, the home will be in the same folder as labelImg
@@ -24,6 +23,7 @@ class Settings(object):
         if self.path:
             with open(self.path, 'wb') as f:
                 pickle.dump(self.data, f, pickle.HIGHEST_PROTOCOL)
+                print(f"Settings successfully saved to {self.path}")
                 return True
         return False
 
@@ -32,9 +32,11 @@ class Settings(object):
             if os.path.exists(self.path):
                 with open(self.path, 'rb') as f:
                     self.data = pickle.load(f)
+                    print(f"Settings successfully loaded from {self.path}")
                     return True
-        except:
-            print('Loading setting failed')
+        except (IOError, OSError) as e:
+            print(f"Error loading settings: {e}. Resetting to defaults.")
+            self.reset()
         return False
 
     def reset(self):
