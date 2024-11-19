@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Setup Python Environment
         run: |
-          pip3 install pyinstaller pyqt5==5.15.6 lxml
+          pip3 install pyinstaller pyqt5 lxml
       - name: Build LabelImg
         run: |
           pyrcc5 -o libs/resources.py resources.qrc
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Setup Python Environment
         run: |
-          pip3 install pyinstaller pyqt5==5.15.6 lxml
+          pip3 install pyinstaller pyqt5 lxml
       - name: Build LabelImg
         run: |
           pyrcc5 -o libs/resources.py resources.qrc
