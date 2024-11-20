@@ -75,6 +75,7 @@ class YOLOWriter:
         for box in self.box_list:
             class_index, x_center, y_center, w, h = self.bnd_box_to_yolo_line(box, class_list)
             # print (classIndex, x_center, y_center, w, h)
+            # print (out_class_file)
             out_file.write("%d %.6f %.6f %.6f %.6f\n" % (class_index, x_center, y_center, w, h))
 
         # print (classList)
@@ -127,7 +128,13 @@ class YoloReader:
         self.shapes.append((label, points, None, None, difficult))
 
     def yolo_line_to_shape(self, class_index, x_center, y_center, w, h):
-        label = self.classes[int(class_index)]
+        if int(class_index) >= len(self.classes):
+            print(f"Warning: Class index {class_index} is not in the predefined class list {self.classes}. Adding a new class.")
+            new_class = f"Class_{class_index}"
+            self.classes.append(new_class)  # Добавляем новый класс
+            label = new_class
+        else:
+            label = self.classes[int(class_index)]
 
         x_min = max(float(x_center) - float(w) / 2, 0)
         x_max = min(float(x_center) + float(w) / 2, 1)

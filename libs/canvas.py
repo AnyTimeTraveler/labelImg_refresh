@@ -740,6 +740,11 @@ class Canvas(QWidget):
         self.selected_shape_copy = None
         self.parent().window().set_dirty()
 
+        self.shapes.clear()  # Удаляем все текущие фигуры
+        self.selected_shape = None
+        self.current = None
+        self.repaint()
+
         self.restore_cursor()
         self.pixmap = None
         self.update()

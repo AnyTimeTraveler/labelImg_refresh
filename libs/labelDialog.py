@@ -48,7 +48,8 @@ class LabelDialog(QDialog):
             QMessageBox.warning(self, "Invalid Input", "Label cannot be empty.")
             return
         if trimmed_text and trimmed_text not in self.parent().label_hist:
-            self.accept()
+            self.parent().label_hist.append(trimmed_text)  # Добавляем в историю, если нет
+        self.accept()
 
     def post_process(self):
         self.edit.setText(trimmed(self.edit.text()))
@@ -87,7 +88,8 @@ class LabelDialog(QDialog):
 
     def list_item_click(self, t_qlist_widget_item):
         text = trimmed(t_qlist_widget_item.text())
-        self.edit.setText(text)
+        self.edit.setText(text)  # Установить текст в поле редактирования
+        #self.validate()
 
     def list_item_double_click(self, t_qlist_widget_item):
         self.list_item_click(t_qlist_widget_item)

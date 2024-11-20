@@ -69,6 +69,8 @@ class MainWindow(QMainWindow, WindowMixin):
             default_save_dir=None,
     ):
         super(MainWindow, self).__init__()
+        self.image_data = None
+        self.label_file = None
         self.setWindowTitle(__appname__)
 
         # Load setting in the main thread
@@ -766,6 +768,7 @@ class MainWindow(QMainWindow, WindowMixin):
             open,
             open_dir,
             change_save_dir,
+            delete_image,
             open_next_image,
             open_prev_image,
             verify,
@@ -1132,15 +1135,35 @@ class MainWindow(QMainWindow, WindowMixin):
     def edit_label(self):
         if not self.canvas.editing():
             return
+
+        # Получить текущую метку
         item = self.current_item()
         if not item:
             return
-        text = self.label_dialog.pop_up(item.text())
-        if text is not None:
-            item.setText(text)
-            item.setBackground(generate_color_by_text(text))
+
+        # Открыть диалоговое окно для редактирования
+        current_label = item.text()
+        new_label = self.label_dialog.pop_up(current_label)
+        if new_label and new_label != current_label:
+            # Обновляем текст метки
+            item.setText(new_label)
+            item.setBackground(generate_color_by_text(new_label))
+
+            # Синхронизируем метку с фигурой на холсте
+            shape = self.items_to_shapes[item]
+            shape.label = new_label
+            shape.line_color = generate_color_by_text(new_label)
+            shape.fill_color = generate_color_by_text(new_label)
+
+            # Установить флаг изменения
             self.set_dirty()
+
+            # Обновляем список уникальных меток
             self.update_combo_box()
+
+            # Если в истории меток нет новой метки, добавляем её
+            if new_label not in self.label_hist:
+                self.label_hist.append(new_label)
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def file_item_double_clicked(self, item=None):
@@ -1231,6 +1254,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.update_combo_box()
 
     def load_labels(self, shapes):
+        # Очищаем текущие данные меток перед загрузкой новых
+        self.label_list.clear()
+        self.items_to_shapes.clear()
+        self.shapes_to_items.clear()
+
         s = []
         for label, points, line_color, fill_color, difficult in shapes:
             shape = Shape(label=label)
@@ -2146,7 +2174,8 @@ class MainWindow(QMainWindow, WindowMixin):
         t_yolo_parse_reader = YoloReader(
             txt_path, self.image, self.default_prefdef_class_file)
         shapes = t_yolo_parse_reader.get_shapes()
-        print(shapes)
+
+        print(os.path.basename(txt_path), shapes)
         self.load_labels(shapes)
         self.canvas.verified = t_yolo_parse_reader.verified
 
@@ -2176,7 +2205,6 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toggle_draw_square(self):
         self.canvas.set_drawing_shape_to_square(self.draw_squares_option.isChecked())
-
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
