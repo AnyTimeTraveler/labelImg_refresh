@@ -2048,11 +2048,31 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.saveAs.setEnabled(False)
 
     def delete_image(self):
-        delete_path = self.file_path
-        if delete_path is not None:
+        if not self.file_path:
+            QMessageBox.warning(self, "Warning", "No image selected for deletion.")
+            return
+        else:
+            delete_path = self.file_path
             idx = self.cur_img_idx
+
+            # Удаление изображения
             if os.path.exists(delete_path):
                 os.remove(delete_path)
+                self.status(f"Deleted image: {delete_path}")
+
+                if self.default_save_dir:
+                    label_file_path = os.path.join(
+                        self.default_save_dir,
+                        os.path.splitext(os.path.basename(self.file_path))[0] + LabelFile.suffix)
+                else:
+                    label_file_path = os.path.splitext(self.file_path)[0] + LabelFile.suffix
+
+                if os.path.exists(label_file_path):
+                    try:
+                        os.remove(label_file_path)
+                    except Exception as e:
+                        QMessageBox.warning(self, "Error", f"Failed to delete label file: {str(e)}")
+
             self.import_dir_images(self.last_open_dir)
             if self.img_count > 0:
                 self.cur_img_idx = min(idx, self.img_count - 1)
@@ -2105,11 +2125,15 @@ class MainWindow(QMainWindow, WindowMixin):
             self.set_dirty()
 
     def delete_selected_shape(self):
+        # Удаление выбранной фигуры
         self.remove_label(self.canvas.delete_selected())
         self.set_dirty()
+
+        # Проверка: если больше нет фигур
         if self.no_shapes():
             for action in self.actions.onShapesPresent:
                 action.setEnabled(False)
+
 
     def choose_shape_line_color(self):
         color = self.color_dialog.getColor(
