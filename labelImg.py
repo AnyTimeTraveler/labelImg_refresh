@@ -1247,11 +1247,34 @@ class MainWindow(QMainWindow, WindowMixin):
         if shape is None:
             # print('rm empty label')
             return
+
+        # Удаляем метку из списка
         item = self.shapes_to_items[shape]
         self.label_list.takeItem(self.label_list.row(item))
         del self.shapes_to_items[shape]
         del self.items_to_shapes[item]
         self.update_combo_box()
+
+        # Проверяем, пуст ли список меток
+        if self.label_list.count() == 0:
+            # Определяем путь к файлу меток
+            if self.default_save_dir:
+                label_file_path = os.path.join(
+                    self.default_save_dir,
+                    os.path.splitext(os.path.basename(self.file_path))[0] + LabelFile.suffix)
+            else:
+                # Если директория сохранения не задана, предполагаем, что файл меток
+                # находится в той же директории, что и изображение
+                label_file_path = os.path.splitext(self.file_path)[0] + LabelFile.suffix
+
+            # Если файл меток существует, удаляем его
+            if os.path.exists(label_file_path):
+                try:
+                    os.remove(label_file_path)
+                    self.status(f"Deleted label file: {label_file_path}")
+                except Exception as e:
+                    QMessageBox.warning(self, "Error", f"Failed to delete label file: {str(e)}")
+
 
     def load_labels(self, shapes):
         # Очищаем текущие данные меток перед загрузкой новых
@@ -1318,7 +1341,19 @@ class MainWindow(QMainWindow, WindowMixin):
                 difficult=s.difficult,
             )
 
+        # Форматируем список фигур для сохранения
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
+
+        # Если список фигур пуст, удаляем файл меток (если он существует)
+        if not shapes:
+            if os.path.exists(annotation_file_path):
+                try:
+                    os.remove(annotation_file_path)
+                    print(f"Label file deleted: {annotation_file_path}")
+                except Exception as e:
+                    QMessageBox.warning(self, "Error", f"Failed to delete label file: {str(e)}")
+            return False
+
         # Can add different annotation formats here
         try:
             if self.label_file_format == LabelFileFormat.PASCAL_VOC:
