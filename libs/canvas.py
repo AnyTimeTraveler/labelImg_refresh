@@ -11,9 +11,6 @@ CURSOR_DRAW = Qt.CrossCursor
 CURSOR_MOVE = Qt.ClosedHandCursor
 CURSOR_GRAB = Qt.OpenHandCursor
 
-# class Canvas(QGLWidget):
-
-
 class Canvas(QWidget):
     zoomRequest = pyqtSignal(int)
     lightRequest = pyqtSignal(int)

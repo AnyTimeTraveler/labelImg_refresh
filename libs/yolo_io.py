@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
 import codecs
 import os
 
@@ -30,7 +28,9 @@ class YOLOWriter:
             'ymax': y_max, 'name': name, 'difficult': difficult
         })
 
-    def bnd_box_to_yolo_line(self, box, class_list=[]):
+    def bnd_box_to_yolo_line(self, box, class_list=None):
+        if class_list is None:
+            class_list = []
         x_min = box['xmin']
         x_max = box['xmax']
         y_min = box['ymin']
@@ -51,14 +51,13 @@ class YOLOWriter:
 
         return class_index, x_center, y_center, w, h
 
-    def save(self, class_list=[], target_file=None):
+    def save(self, class_list=None, target_file=None):
+        if class_list is None:
+            class_list = []
         if target_file is None:
             target_file = self.filename + '.txt'
 
         class_list = list(set(class_list))  # Ensure class_list has unique values
-
-        out_file = None  # Update yolo .txt
-        out_class_file = None   # Update class list .txt
 
         if target_file is None:
             out_file = open(
@@ -86,8 +85,6 @@ class YOLOWriter:
         out_class_file.close()
         out_file.close()
 
-
-
 class YoloReader:
 
     def __init__(self, file_path, image, class_list_path=None):
@@ -98,7 +95,7 @@ class YoloReader:
 
         if class_list_path is None:
             dir_path = os.path.dirname(os.path.realpath(self.file_path))
-            self.class_list_path = os.path.join(dir_path, "classes.txt")
+            self.class_list_path = os.path.join(dir_path, "labels.txt")
         else:
             self.class_list_path = class_list_path
 
@@ -114,10 +111,11 @@ class YoloReader:
         self.img_size = img_size
 
         self.verified = False
-        # try:
-        self.parse_yolo_format()
-        # except:
-        #     pass
+        try:
+            self.parse_yolo_format()
+        except Exception as e:
+            print(f"Error in labels format {e}")
+            return
 
     def get_shapes(self):
         return self.shapes
@@ -151,6 +149,10 @@ class YoloReader:
     def parse_yolo_format(self):
         bnd_box_file = open(self.file_path, 'r')
         for bndBox in bnd_box_file:
+            # Fix potential format issues with comma instead of period
+            if ',' in bndBox:
+                print(f"Warning: Detected comma in bounding box data. Converting to period: {bndBox.strip()}")
+            bndBox = bndBox.replace(',', '.')
             class_index, x_center, y_center, w, h = bndBox.strip().split(' ')
             label, x_min, y_min, x_max, y_max = self.yolo_line_to_shape(class_index, x_center, y_center, w, h)
 

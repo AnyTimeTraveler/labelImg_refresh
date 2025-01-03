@@ -1,13 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
-import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
 import codecs
 from libs.constants import DEFAULT_ENCODING
 from libs.ustr import ustr
-
 
 XML_EXT = '.xml'
 ENCODE_METHOD = DEFAULT_ENCODING

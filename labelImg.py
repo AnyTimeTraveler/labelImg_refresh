@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
-import os.path
+import os
 import platform
 import shutil
-import sys
 import webbrowser as wb
 from functools import partial
 
@@ -60,6 +59,7 @@ class WindowMixin(object):
 
 
 class MainWindow(QMainWindow, WindowMixin):
+    cur_img_idx: int
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
 
     def __init__(
@@ -71,6 +71,7 @@ class MainWindow(QMainWindow, WindowMixin):
         super(MainWindow, self).__init__()
         self.image_data = None
         self.label_file = None
+        self.label_file_path = None
         self.setWindowTitle(__appname__)
 
         # Load setting in the main thread
@@ -668,6 +669,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 edit,
                 copy,
                 delete,
+                delete_image,
                 shape_line_color,
                 shape_fill_color,
             ),
@@ -829,9 +831,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
                 self.recent_files = [ustr(i) for i in recent_file_qstring_list]
             else:
-                self.recent_files = recent_file_qstring_list = settings.get(
-                    SETTING_RECENT_FILES
-                )
+                pass
 
         size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
         position = QPoint(0, 0)
@@ -1263,18 +1263,15 @@ class MainWindow(QMainWindow, WindowMixin):
                     self.default_save_dir,
                     os.path.splitext(os.path.basename(self.file_path))[0] + LabelFile.suffix)
             else:
-                # Если директория сохранения не задана, предполагаем, что файл меток
-                # находится в той же директории, что и изображение
                 label_file_path = os.path.splitext(self.file_path)[0] + LabelFile.suffix
 
             # Если файл меток существует, удаляем его
             if os.path.exists(label_file_path):
+                print(f"Deleted label file: {os.path.basename(label_file_path)}")
                 try:
                     os.remove(label_file_path)
-                    self.status(f"Deleted label file: {label_file_path}")
                 except Exception as e:
                     QMessageBox.warning(self, "Error", f"Failed to delete label file: {str(e)}")
-
 
     def load_labels(self, shapes):
         # Очищаем текущие данные меток перед загрузкой новых
@@ -1400,11 +1397,8 @@ class MainWindow(QMainWindow, WindowMixin):
                     self.line_color.getRgb(),
                     self.fill_color.getRgb(),
                 )
-            print(
-                "Image:{0} -> Annotation:{1}".format(
-                    self.file_path, annotation_file_path
-                )
-            )
+            print("Image: {0} -> Annotation: {1} \nShapes: {2}".format(os.path.basename(self.file_path), os.path.basename(annotation_file_path), shapes))
+
             return True
         except LabelFileError as e:
             self.error_message("Error saving label data", "<b>%s</b>" % e)
@@ -1685,6 +1679,9 @@ class MainWindow(QMainWindow, WindowMixin):
         return "[{} / {}]".format(self.cur_img_idx + 1, self.img_count)
 
     def show_bounding_box_from_annotation_file(self, file_path):
+        if not file_path:
+            self.status("Select image folder first", 6000)
+            return
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])
             xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
@@ -1700,18 +1697,19 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.load_yolo_txt_by_filename(txt_path)
             elif os.path.isfile(json_path):
                 self.load_create_ml_json_by_filename(json_path, file_path)
-
         else:
             xml_path = os.path.splitext(file_path)[0] + XML_EXT
             txt_path = os.path.splitext(file_path)[0] + TXT_EXT
             json_path = os.path.splitext(file_path)[0] + JSON_EXT
-
-            if os.path.isfile(xml_path):
-                self.load_pascal_xml_by_filename(xml_path)
-            elif os.path.isfile(txt_path):
-                self.load_yolo_txt_by_filename(txt_path)
-            elif os.path.isfile(json_path):
-                self.load_create_ml_json_by_filename(json_path, file_path)
+            try:
+                if os.path.isfile(xml_path):
+                    self.load_pascal_xml_by_filename(xml_path)
+                elif os.path.isfile(txt_path):
+                    self.load_yolo_txt_by_filename(txt_path)
+                elif os.path.isfile(json_path):
+                    self.load_create_ml_json_by_filename(json_path, file_path)
+            except Exception:
+                return
 
     def resizeEvent(self, event):
         if (
@@ -1822,24 +1820,26 @@ class MainWindow(QMainWindow, WindowMixin):
 
         if dir_path:
             self.default_save_dir = ustr(dir_path)
-            self.statusBar().showMessage(
-                "Save directory changed to %s" % self.default_save_dir, 5000
+            self.status("Save directory changed to %s" % self.default_save_dir, 5000
             )
         else:
             # Prevent application from closing when canceling the dialog
-            self.statusBar().showMessage("Save directory change canceled", 2000)
-            return
+            self.status("Save directory change canceled", 2000)
+            return True
 
         if dir_path is not None and len(dir_path) > 1:
             self.default_save_dir = dir_path
+            self.show_bounding_box_from_annotation_file(self.file_path)
 
-        self.show_bounding_box_from_annotation_file(self.file_path)
-
-        self.statusBar().showMessage(
-            "%s . Annotation will be saved to %s"
-            % ("Change saved folder", self.default_save_dir)
-        )
-        self.statusBar().show()
+            self.status(
+                "%s . Annotation will be saved to %s"
+                % ("Change saved folder", self.default_save_dir)
+            )
+            self.statusBar().show()
+        else:
+            self.status("Select image folder first", 2000)
+            self.statusBar().show()
+            return True
 
 
     def open_annotation_dialog(self, _value=False):
@@ -2022,9 +2022,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.load_file(filename)
 
     def save_file(self, _value=False):
-        if self.default_save_dir is not None and len(
-                ustr(self.default_save_dir)
-        ):
+        if self.default_save_dir is not None and len(ustr(self.default_save_dir)):
             if self.file_path:
                 image_file_name = os.path.basename(self.file_path)
                 saved_file_name = os.path.splitext(image_file_name)[0]
@@ -2032,16 +2030,23 @@ class MainWindow(QMainWindow, WindowMixin):
                     ustr(self.default_save_dir), saved_file_name
                 )
                 self._save_file(saved_path)
+            else:
+                return True
+                # QMessageBox.warning(self, "Warning", "No file is currently loaded to save.")
         else:
-            image_file_dir = os.path.dirname(self.file_path)
-            image_file_name = os.path.basename(self.file_path)
-            saved_file_name = os.path.splitext(image_file_name)[0]
-            saved_path = os.path.join(image_file_dir, saved_file_name)
-            self._save_file(
-                saved_path
-                if self.label_file
-                else self.save_file_dialog(remove_ext=False)
-            )
+            if self.file_path:
+                image_file_dir = os.path.dirname(self.file_path)
+                image_file_name = os.path.basename(self.file_path)
+                saved_file_name = os.path.splitext(image_file_name)[0]
+                saved_path = os.path.join(image_file_dir, saved_file_name)
+                self._save_file(
+                    saved_path
+                    if self.label_file
+                    else self.save_file_dialog(remove_ext=False)
+                )
+            else:
+                return True
+                # QMessageBox.warning(self, "Warning", "No file is currently loaded to save.")
 
     def save_file_as(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
@@ -2060,9 +2065,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if dlg.exec_():
             full_file_path = ustr(dlg.selectedFiles()[0])
             if remove_ext:
-                return os.path.splitext(full_file_path)[
-                    0
-                ]  # Return file path without the extension.
+                return os.path.splitext(full_file_path)[0]  # Return file path without the extension.
             else:
                 return full_file_path
         return ""
@@ -2085,15 +2088,15 @@ class MainWindow(QMainWindow, WindowMixin):
     def delete_image(self):
         if not self.file_path:
             QMessageBox.warning(self, "Warning", "No image selected for deletion.")
-            return
+            return True
         else:
             delete_path = self.file_path
             idx = self.cur_img_idx
 
             # Удаление изображения
             if os.path.exists(delete_path):
+                print(f"Deleted image: {delete_path}")
                 os.remove(delete_path)
-                self.status(f"Deleted image: {delete_path}")
 
                 if self.default_save_dir:
                     label_file_path = os.path.join(
@@ -2104,6 +2107,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
                 if os.path.exists(label_file_path):
                     try:
+                        print(f"Deleted label file: {label_file_path}")
                         os.remove(label_file_path)
                     except Exception as e:
                         QMessageBox.warning(self, "Error", f"Failed to delete label file: {str(e)}")
@@ -2160,11 +2164,9 @@ class MainWindow(QMainWindow, WindowMixin):
             self.set_dirty()
 
     def delete_selected_shape(self):
-        # Удаление выбранной фигуры
         self.remove_label(self.canvas.delete_selected())
         self.set_dirty()
 
-        # Проверка: если больше нет фигур
         if self.no_shapes():
             for action in self.actions.onShapesPresent:
                 action.setEnabled(False)
@@ -2234,7 +2236,7 @@ class MainWindow(QMainWindow, WindowMixin):
             txt_path, self.image, self.default_prefdef_class_file)
         shapes = t_yolo_parse_reader.get_shapes()
 
-        print(os.path.basename(txt_path), shapes)
+        #print(os.path.basename(txt_path), shapes)
         self.load_labels(shapes)
         self.canvas.verified = t_yolo_parse_reader.verified
 

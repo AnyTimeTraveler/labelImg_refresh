@@ -1,4 +1,3 @@
-import sys
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox
 
 class ComboBox(QWidget):

@@ -7,7 +7,6 @@ and execute "pyrcc5 ../resources.qrc -o resources.py" in the libs directory
 """
 import re
 import os
-import sys
 import locale
 from libs.ustr import ustr
 

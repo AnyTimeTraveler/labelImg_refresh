@@ -1,4 +1,5 @@
 import sys
+from lxml.builder import unicode
 from libs.constants import DEFAULT_ENCODING
 
 def ustr(x):

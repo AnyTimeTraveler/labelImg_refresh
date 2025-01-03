@@ -9,8 +9,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 QT5 = True
 
-
-
 def new_icon(icon):
     return QIcon(':/' + icon)
 
@@ -90,7 +88,7 @@ def have_qstring():
 
 
 def util_qt_strlistclass():
-    return QStringList if have_qstring() else list
+    return list if not have_qstring() else QStringList
 
 
 def natural_sort(list, key=lambda s:s):
@@ -102,7 +100,6 @@ def natural_sort(list, key=lambda s:s):
         return lambda s: [convert(c) for c in re.split('([0-9]+)', key(s))]
     sort_key = get_alphanum_key_func(key)
     list.sort(key=sort_key)
-
 
 # QT4 has a trimmed method, in QT5 this is called strip
 if QT5:

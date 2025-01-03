@@ -6,11 +6,11 @@ from PyQt5.QtCore import *
 from libs.utils import distance
 import sys
 
-DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
-DEFAULT_FILL_COLOR = QColor(255, 0, 0, 128)
-DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
+DEFAULT_LINE_COLOR = QColor(0, 255, 0, 120)
+DEFAULT_FILL_COLOR = QColor(255, 0, 0, 120)
+DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 180)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
-DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
+DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 180)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
 
 
@@ -28,9 +28,9 @@ class Shape(object):
     vertex_fill_color = DEFAULT_VERTEX_FILL_COLOR
     h_vertex_fill_color = DEFAULT_HVERTEX_FILL_COLOR
     point_type = P_ROUND
-    point_size = 16
+    point_size = 12
     scale = 1.0
-    label_font_size = 8
+    label_font_size = 6
 
     def __init__(self, label=None, line_color=None, difficult=False, paint_label=False):
         self.label = label
