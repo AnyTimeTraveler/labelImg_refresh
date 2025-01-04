@@ -23,7 +23,6 @@ Build from source
 ## Ubuntu Linux
 ### Python 3 + Qt5
 
-.. code:: shell
 
     sudo apt-get install pyqt5-dev-tools
     sudo pip3 install -r requirements/requirements-linux-python3.txt
@@ -35,13 +34,11 @@ Build from source
 
 * Install `Python <https://www.python.org/downloads/windows/>`__
 
-.. code:: shell
 
     pip install pyqt5 lxml
 
 * Open cmd and go to the `labelImg <#labelimg>`__ directory
 
-.. code:: shell
 
     pyrcc5 resources.qrc -o resources.py
     pyrcc5 -o libs/resources.py resources.qrc
@@ -51,7 +48,6 @@ Build from source
 
 * If you want to package it into a folder with EXE (portatable):
 
-.. code:: shell
 
     Install pyinstaller and execute:
 
