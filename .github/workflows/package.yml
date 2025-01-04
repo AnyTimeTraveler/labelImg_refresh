@@ -20,7 +20,7 @@ jobs:
           Compress-Archive -Path dist\* -DestinationPath labelImg-windows.zip
       - uses: actions/upload-artifact@v4.5.0
         with:
-          name: Windows artifact
+          name: labelImg_refresh_win
           path: labelImg-windows.zip
 
   package-linux:
@@ -38,5 +38,5 @@ jobs:
           pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./libs -p ./data -p ./
       - uses: actions/upload-artifact@v4.5.0
         with:
-          name: Linux artifact
+          name: labelImg_refresh_linus
           path: dist/labelImg
