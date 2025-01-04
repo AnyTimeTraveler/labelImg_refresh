@@ -29,6 +29,7 @@ Build from source
     make qt5py3
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+```
 
 ## Windows
 
@@ -36,7 +37,7 @@ Build from source
 
 ```cmd
     pip install pyqt5 lxml
-
+```
 * Open cmd and go to the `labelImg <#labelimg>`__ directory
 
 ```cmd
@@ -45,7 +46,7 @@ Build from source
 
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
+```
 
 * If you want to package it into a folder with EXE (portatable):
     * Install pyinstaller and execute:
@@ -53,9 +54,9 @@ Build from source
 ```cmd
     pip install pyinstaller
     pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./libs -p ./data -p ./
+```
 
 ## Usage
-
 ### Steps (PascalVOC)
 1. Build and launch using the instructions above.
 2. Click 'Change default saved annotation folder' in Menu/File
