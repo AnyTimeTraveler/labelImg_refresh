@@ -23,7 +23,7 @@ Build from source
 ## Ubuntu Linux
 ### Python 3 + Qt5
 
-
+```bash
     sudo apt-get install pyqt5-dev-tools
     sudo pip3 install -r requirements/requirements-linux-python3.txt
     make qt5py3
@@ -34,23 +34,23 @@ Build from source
 
 * Install `Python <https://www.python.org/downloads/windows/>`__
 
-
+```cmd
     pip install pyqt5 lxml
 
 * Open cmd and go to the `labelImg <#labelimg>`__ directory
 
-
+```cmd
     pyrcc5 resources.qrc -o resources.py
     pyrcc5 -o libs/resources.py resources.qrc
 
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
+
 * If you want to package it into a folder with EXE (portatable):
+    * Install pyinstaller and execute:
 
-
-    Install pyinstaller and execute:
-
+```cmd
     pip install pyinstaller
     pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./libs -p ./data -p ./
 
