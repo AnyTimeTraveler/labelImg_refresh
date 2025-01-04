@@ -55,6 +55,8 @@ Build from source
     pip install pyinstaller
     pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./ --add-data "./data/;./data" --add-data "./libs;./libs"
 ```
+    * You can set the list of required classes in `labelImg\_internal\data\predefined_classes.txt `
+    * The settings file is stored at `\labeling\_internal\lib\.label Img Settings.pl `
 
 ## Usage
 ### Steps (PascalVOC)
