@@ -33,12 +33,12 @@ Build from source
 
 ## Windows
 
-* Install `Python <https://www.python.org/downloads/windows/>`__
+* Install Python https://www.python.org/downloads/windows/
 
 ```cmd
     pip install pyqt5 lxml
 ```
-* Open cmd and go to the `labelImg <#labelimg>`__ directory
+* Open cmd and go to the `labelImg <#labelimg>` directory
 
 ```cmd
     pyrcc5 resources.qrc -o resources.py
