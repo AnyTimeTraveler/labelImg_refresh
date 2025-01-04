@@ -53,7 +53,7 @@ Build from source
 
 ```cmd
     pip install pyinstaller
-    pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./libs -p ./data -p ./
+    pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./ --add-data "./data;data" --add-data "./libs;_internal/libs"
 ```
 
 ## Usage
