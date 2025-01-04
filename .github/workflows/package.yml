@@ -14,7 +14,7 @@ jobs:
           pyrcc5 -o libs/resources.py resources.qrc
       - name: Package LabelImg
         run: |
-          pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
+          pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./libs -p ./data -p ./
       - uses: actions/upload-artifact@v4
         with:
           name: Windows artifact
@@ -31,7 +31,7 @@ jobs:
           pyrcc5 -o libs/resources.py resources.qrc
       - name: Package LabelImg
         run: |
-          pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
+          pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./libs -p ./data -p ./
       - uses: actions/upload-artifact@v4
         with:
           name: Linux artifact

@@ -85,3 +85,22 @@ python label_to_csv.py \
 
 The output file is `res.csv` by default. Afterwards, upload the csv file to the cloud storage and you can start training!
 
+## Yolo_renamer_for_image_and_labels.py
+
+### Image and Label Renamer
+This Python script allows users to rename image files and their corresponding label files in specified directories. It utilizes the Tkinter library for a graphical interface to select directories and prompts the user for a new naming convention.
+* Features
+    Select directories for images and labels using a graphical file dialog.
+    Automatically find matching files based on their names (excluding extensions).
+    Rename both image and label files according to a specified new name with an index.
+
+* Requirements
+	Python 3.x
+    Tkinter (included with standard Python installations)
+    No additional libraries required
+
+* Usage
+    Run the script in a Python environment.
+    Select the folders containing your images and labels when prompted.
+    Enter a new base name for your files when prompted.
+    The script will rename matching files accordingly.
