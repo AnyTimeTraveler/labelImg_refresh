@@ -140,4 +140,5 @@ In case there are issues with loading the classes, you can either:
 Free software: MIT license
 
 Original source citation: Tzutalin. LabelImg. Git code (2015) https://github.com/tzutalin/labelImg
+
 Fork: SLY-F0X. labelImg_refresh. Git code (2025) https://github.com/SLY-F0X/labelImg_refresh
