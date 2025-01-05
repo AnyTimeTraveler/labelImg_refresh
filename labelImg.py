@@ -59,7 +59,6 @@ class WindowMixin(object):
 
 
 class MainWindow(QMainWindow, WindowMixin):
-    cur_img_idx: int
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
 
     def __init__(
@@ -173,7 +172,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Text field to find images by index
         self.idx_text_box = QLineEdit()
-        self.jump_button = QPushButton("Show image", self)
+        self.jump_button = QPushButton("Show image by Index", self)
         self.jump_button.clicked.connect(self.jump_on_click)
 
         self.file_list_widget = QListWidget()
@@ -831,7 +830,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
                 self.recent_files = [ustr(i) for i in recent_file_qstring_list]
             else:
-                pass
+                self.recent_files = recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
 
         size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
         position = QPoint(0, 0)
@@ -1052,7 +1051,7 @@ class MainWindow(QMainWindow, WindowMixin):
             ):  # 'chrome' not in wb._browsers in windows
                 wb.register("chrome", None, wb.BackgroundBrowser("chrome"))
             else:
-                chrome_path = "D:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+                chrome_path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
                 if os.path.isfile(chrome_path):
                     wb.register(
                         "chrome", None, wb.BackgroundBrowser(chrome_path)
@@ -1174,13 +1173,21 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Takes index from text box and opens corresponding file
     def jump_on_click(self):
-        self.cur_img_idx = int(self.idx_text_box.text()) - 1
-        if self.cur_img_idx > self.img_count:
+        idx_text = self.idx_text_box.text().strip()
+        if not idx_text.isdigit():
+            self.status("Enter the index number in the window above", 6000)
             return
+        self.cur_img_idx = int(idx_text) - 1
+
+        if not self.m_img_list:
+            self.status("Select image folder first", 6000)
+            return
+        if self.cur_img_idx < 0 or self.cur_img_idx >= len(self.m_img_list):
+            return
+
         filename = self.m_img_list[self.cur_img_idx]
         if filename:
             self.load_file(filename)
-
         self.idx_text_box.setText("")
 
     # Add chris
@@ -1701,15 +1708,13 @@ class MainWindow(QMainWindow, WindowMixin):
             xml_path = os.path.splitext(file_path)[0] + XML_EXT
             txt_path = os.path.splitext(file_path)[0] + TXT_EXT
             json_path = os.path.splitext(file_path)[0] + JSON_EXT
-            try:
-                if os.path.isfile(xml_path):
-                    self.load_pascal_xml_by_filename(xml_path)
-                elif os.path.isfile(txt_path):
-                    self.load_yolo_txt_by_filename(txt_path)
-                elif os.path.isfile(json_path):
-                    self.load_create_ml_json_by_filename(json_path, file_path)
-            except Exception:
-                return
+
+            if os.path.isfile(xml_path):
+                self.load_pascal_xml_by_filename(xml_path)
+            elif os.path.isfile(txt_path):
+                self.load_yolo_txt_by_filename(txt_path)
+            elif os.path.isfile(json_path):
+                self.load_create_ml_json_by_filename(json_path, file_path)
 
     def resizeEvent(self, event):
         if (
@@ -1806,6 +1811,15 @@ class MainWindow(QMainWindow, WindowMixin):
         return images
 
     def change_save_dir_dialog(self, _value=False):
+        if isinstance(_value, str) and os.path.isdir(_value):
+            self.default_save_dir = _value
+            self.show_bounding_box_from_annotation_file(self.file_path)
+            self.statusBar().showMessage('%s . Annotation will be saved to %s' %
+                                         ('Change saved folder', self.default_save_dir))
+            print("Change saved folder", self.default_save_dir)
+            self.statusBar().show()
+            return
+
         if self.default_save_dir is not None:
             path = ustr(self.default_save_dir)
         else:
@@ -2265,7 +2279,10 @@ class MainWindow(QMainWindow, WindowMixin):
             shape.paint_label = self.display_label_option.isChecked()
 
     def toggle_draw_square(self):
-        self.canvas.set_drawing_shape_to_square(self.draw_squares_option.isChecked())
+        self.canvas.set_drawing_shape_to_square(
+            self.draw_squares_option.isChecked()
+        )
+
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
