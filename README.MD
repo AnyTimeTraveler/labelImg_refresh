@@ -17,6 +17,9 @@ The primary goal of this fork is to enhance the stability and performance of the
   * Given the advancements in Python 3, this fork will ensure that the program fully utilizes the features and improvements offered by this version of the language.
 #### Bug Fixes:
   * Identify and rectify known bugs that may cause unexpected behavior or crashes during use. This includes thorough testing and debugging to ensure a more stable application.
+#### YOLO Auto-Annotate Support:
+  * Add support for automatic object annotation using pretrained YOLO models (`.pt` format).
+  * Support for batch annotation of all images in a directory.
 
 Build from source
 ========
@@ -36,8 +39,15 @@ Build from source
 * Install Python https://www.python.org/downloads/windows/
 
 ```cmd
-    pip install pyqt5 lxml
+    pip install pyqt5 lxml torch ultralytics
 ```
+
+* Optional for auto annotate
+
+```cmd
+    pip install torch ultralytics
+```
+
 * Open cmd and go to the `labelImg <#labelimg>` directory
 
 ```cmd
@@ -56,7 +66,18 @@ Build from source
     pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -n "labelImg" -c labelImg.py -p ./ --add-data "./data/;./data" --add-data "./libs;./libs"
 ```
     * You can set the list of required classes in `labelImg\_internal\data\predefined_classes.txt `
-    * The settings file is stored at `\labeling\_internal\lib\.label Img Settings.pl `
+    * The settings file is stored at `\labeling\_internal\lib\.labelImgSettings.pkl`
+
+# Requirements for YOLO Auto-Annotate
+
+- Place a YOLO `.pt` model in the `yolo_model` folder in the project root.
+- The tool loads the first `.pt` file it finds.
+
+```
+labelImg_refresh/
+├── yolo_model/
+│   └── best.pt
+```
 
 ## Usage
 ### Steps (PascalVOC)
@@ -91,38 +112,50 @@ You can edit the `data/predefined_classes.txt` to load pre-defined classes
 1. Copy the existing lables file to same folder with the images. The labels file name must be same with image file name.
 2. Click File and choose `Open Dir` then Open the image folder.
 3. Select image in File List, it will appear the bounding box and label for all objects in that image.
-4. (Choose Display Labels mode in View to show/hide lablels)
+4. Choose Display Labels mode in View to show/hide lablels
+5. View → Yolo Auto-Annotate All Images
 
 
 ## Hotkeys
 ~~~~~~~
-+--------------------+--------------------------------------------+
-| Ctrl + u           | Load all of the images from a directory    |
-+--------------------+--------------------------------------------+
-| Ctrl + r           | Change the default annotation target dir   |
-+--------------------+--------------------------------------------+
-| Ctrl + s           | Save                                       |
-+--------------------+--------------------------------------------+
-| Ctrl + d           | Copy the current label and rect box        |
-+--------------------+--------------------------------------------+
-| Ctrl + Shift + d   | Delete the current image                   |
-+--------------------+--------------------------------------------+
-| Space              | Flag the current image as verified         |
-+--------------------+--------------------------------------------+
-| w                  | Create a rect box                          |
-+--------------------+--------------------------------------------+
-| d                  | Next image                                 |
-+--------------------+--------------------------------------------+
-| a                  | Previous image                             |
-+--------------------+--------------------------------------------+
-| del                | Delete the selected rect box               |
-+--------------------+--------------------------------------------+
-| Ctrl++             | Zoom in                                    |
-+--------------------+--------------------------------------------+
-| Ctrl--             | Zoom out                                   |
-+--------------------+--------------------------------------------+
-| ↑→↓←               | Keyboard arrows to move selected rect box  |
-+--------------------+--------------------------------------------+
++--------------------------+------------------------------------------------+
+| Ctrl+Q                  | Quit application                               |
+| Ctrl+O                  | Open image file                                |
+| Ctrl+U                  | Open image directory                           |
+| Ctrl+R                  | Change save directory                          |
+| Ctrl+Shift+O            | Open annotation file                           |
+| Ctrl+V                  | Copy bounding boxes from previous image        |
+| D                       | Open next image                                |
+| A                       | Open previous image                            |
+| Space                   | Verify current image                           |
+| Ctrl+S                  | Save annotation                                |
+| Ctrl+Y                  | Change annotation format                       |
+| Ctrl+Shift+S            | Save annotation as...                          |
+| Ctrl+W                  | Close current file                             |
+| Ctrl+Shift+D            | Delete current image                           |
+| Ctrl+L                  | Choose line color                              |
+| W                       | Create rectangle (bounding box)                |
+| Ctrl+J                  | Switch to edit mode                            |
+| Delete                  | Delete selected shape                          |
+| Ctrl+D                  | Duplicate selected shape                       |
+| Ctrl+Shift+A            | Toggle advanced mode                           |
+| Ctrl+H                  | Hide all shapes                                |
+| Ctrl+A                  | Show all shapes                                |
+| Ctrl++                  | Zoom in                                        |
+| Ctrl+-                  | Zoom out                                       |
+| Ctrl+=                  | Reset zoom (100%)                              |
+| Ctrl+F                  | Fit window                                     |
+| Ctrl+Shift+F            | Fit width                                      |
+| Ctrl+Shift++            | Increase brightness                            |
+| Ctrl+Shift+-            | Decrease brightness                            |
+| Ctrl+Shift+=            | Reset brightness                               |
+| Ctrl+E                  | Edit selected shape label                      |
+| Ctrl+Shift+L            | Toggle label list                              |
+| Ctrl+Shift+R            | Toggle square drawing mode                     |
+| Tab                     | Auto-annotate current image (YOLO)             |
+| Alt+A                   | Auto-annotate all images (YOLO)                |
+| Arrow Keys              | Move selected shape                            |
++--------------------------+------------------------------------------------+
 ~~~~~~~
 **Verify Image:**
 
