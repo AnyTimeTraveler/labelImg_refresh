@@ -39,7 +39,7 @@ Build from source
 * Install Python https://www.python.org/downloads/windows/
 
 ```cmd
-    pip install pyqt5 lxml torch ultralytics
+    pip install pyqt5 lxml
 ```
 
 * Optional for auto annotate
