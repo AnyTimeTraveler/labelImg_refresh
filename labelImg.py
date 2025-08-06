@@ -1767,7 +1767,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     relative_path = os.path.join(root, file)
                     path = ustr(os.path.abspath(relative_path))
                     images.append(path)
-        natural_sort(images, key=lambda x: x.lower())
+        images.sort()
         return images
 
     def change_save_dir_dialog(self, _value=False):
