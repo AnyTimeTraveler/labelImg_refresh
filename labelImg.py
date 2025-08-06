@@ -172,7 +172,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.jump_button.clicked.connect(self.jump_on_click)
 
         self.file_list_widget = QListWidget()
-        self.file_list_widget.itemDoubleClicked.connect(self.file_item_double_clicked)
+        self.file_list_widget.itemSelectionChanged.connect(self.file_item_selected)
         file_list_layout = QVBoxLayout()
         file_list_layout.setContentsMargins(0, 0, 0, 0)
         file_list_layout.addWidget(self.idx_text_box)
@@ -1140,12 +1140,15 @@ class MainWindow(QMainWindow, WindowMixin):
             if new_label not in self.label_hist:
                 self.label_hist.append(new_label)
 
-    # Tzutalin 20160906 : Add file list and dock to move faster
-    def file_item_double_clicked(self, item=None):
+    def file_item_selected(self):
+        item = self.file_list_widget.currentItem()
+        if item is None:
+            return
         self.cur_img_idx = self.m_img_list.index(ustr(item.text()))
         filename = self.m_img_list[self.cur_img_idx]
         if filename:
             self.load_file(filename)
+        self.file_list_widget.setFocus()
 
     # Takes index from text box and opens corresponding file
     def jump_on_click(self):
