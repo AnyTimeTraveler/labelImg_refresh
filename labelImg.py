@@ -701,12 +701,12 @@ class MainWindow(QMainWindow, WindowMixin):
         self.autoAnnotateAction = QAction("Yolo Auto-Annotate", self)
         self.autoAnnotateAction.setShortcut("Tab")
         self.autoAnnotateAction.setStatusTip("Automatically annotate using YOLO")
-        self.autoAnnotateAction.triggered.connect(self.autoAnnotate)
+        self.autoAnnotateAction.triggered.connect(self.auto_annotate)
 
         self.autoAnnotateAllAction = QAction("Yolo Auto-Annotate All images", self)
         self.autoAnnotateAllAction.setShortcut("Alt+A")
         self.autoAnnotateAllAction.setStatusTip("Automatically annotate ALL images using YOLO")
-        self.autoAnnotateAllAction.triggered.connect(self.autoAnnotateAllImages)
+        self.autoAnnotateAllAction.triggered.connect(self.auto_annotate_all_images)
 
         self.menus = Menus(
             file=self.menu(get_str("menu_file")),
@@ -2285,7 +2285,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def toggle_draw_square(self):
         self.canvas.set_drawing_shape_to_square(self.draw_squares_option.isChecked())
 
-    def autoAnnotate(self):
+    def auto_annotate(self):
         if not hasattr(self, "file_path") or not self.file_path:
             QMessageBox.warning(self, "Warning", "No image loaded for annotation.")
             return
@@ -2312,7 +2312,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.load_labels(shapes)
         self.set_dirty()
 
-    def autoAnnotateAllImages(self):
+    def auto_annotate_all_images(self):
         if not self.m_img_list:
             QMessageBox.information(self, "No Images", "No images loaded.")
             return
