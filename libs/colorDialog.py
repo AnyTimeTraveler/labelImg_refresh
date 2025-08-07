@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QColorDialog, QDialogButtonBox
@@ -19,7 +21,7 @@ class ColorDialog(QColorDialog):
         self.bb.addButton(BB.RestoreDefaults)
         self.bb.clicked.connect(self.check_restore)
 
-    def getColor(self, value=None, title=None, default=None):
+    def getColor(self, value=None, title=None, default=None) -> Optional[QColor]:
         self.default = default
         if title:
             self.setWindowTitle(title)

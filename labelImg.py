@@ -49,7 +49,7 @@ class WindowMixin(object):
             add_actions(menu, actions)
         return menu
 
-    def toolbar(self, title, actions=None):
+    def toolbar(self, title, actions=None) -> ToolBar:
         toolbar = ToolBar(title)
         toolbar.setObjectName("%sToolBar" % title)
         # toolbar.setOrientation(Qt.Vertical)
@@ -2098,7 +2098,7 @@ class MainWindow(QMainWindow, WindowMixin):
         process = QProcess()
         process.startDetached(os.path.abspath(__file__))
 
-    def may_continue(self):
+    def may_continue(self) -> bool:
         if not self.dirty:
             return True
         else:

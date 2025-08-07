@@ -23,7 +23,7 @@ def new_button(text, icon=None, slot=None):
 
 
 def new_action(parent, text, slot=None, shortcut=None, icon=None,
-               tip=None, checkable=False, enabled=True):
+               tip=None, checkable=False, enabled=True) -> QAction:
     """Create a new action and assign callbacks, shortcuts, etc."""
     a = QAction(text, parent)
     if icon is not None:
@@ -44,7 +44,7 @@ def new_action(parent, text, slot=None, shortcut=None, icon=None,
     return a
 
 
-def add_actions(widget, actions):
+def add_actions(widget: QMenu, actions):
     for action in actions:
         if action is None:
             widget.addSeparator()
