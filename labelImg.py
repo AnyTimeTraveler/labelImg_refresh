@@ -1107,7 +1107,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def create_shape(self):
         assert self.beginner()
-        self.canvas.set_editing(False)
+        self.canvas.set_creating(True)
         self.actions.create.setEnabled(False)
 
     def toggle_drawing_sensitive(self, drawing=True):
@@ -1118,22 +1118,23 @@ class MainWindow(QMainWindow, WindowMixin):
         if not drawing and self.beginner():
             # Cancel creation.
             print("Cancel creation.")
-            self.canvas.set_editing(True)
+            self.canvas.set_creating(False)
             self.canvas.restore_cursor()
             self.actions.create.setEnabled(True)
 
-    def toggle_draw_mode(self, edit=True):
-        self.canvas.set_editing(edit)
-        self.actions.createMode.setEnabled(edit)
-        self.actions.editMode.setEnabled(not edit)
+    def _set_create_mode(self, create_mode: bool):
+        print(f"Set create mode: {create_mode}")
+        self.canvas.set_creating(create_mode)
+        self.actions.createMode.setEnabled(not create_mode)
+        self.actions.editMode.setEnabled(create_mode)
 
     def set_create_mode(self):
         assert self.advanced()
-        self.toggle_draw_mode(False)
+        self._set_create_mode(True)
 
     def set_edit_mode(self):
         assert self.advanced()
-        self.toggle_draw_mode(True)
+        self._set_create_mode(False)
         self.label_selection_changed()
 
     def update_file_menu(self):
@@ -1503,7 +1504,7 @@ class MainWindow(QMainWindow, WindowMixin):
             shape = self.canvas.set_last_label(text, generate_color, generate_color)
             self.add_label(shape)
             if self.beginner():  # Switch to edit mode.
-                self.canvas.set_editing(True)
+                self.canvas.set_creating(False)
                 self.actions.create.setEnabled(True)
             else:
                 self.actions.createMode.setEnabled(False)

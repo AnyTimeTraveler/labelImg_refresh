@@ -81,9 +81,9 @@ class Canvas(QWidget):
     def editing(self):
         return self.mode == self.EDIT
 
-    def set_editing(self, value=True):
-        self.mode = self.EDIT if value else self.CREATE
-        if not value:  # Create
+    def set_creating(self, create_mode=True):
+        self.mode = self.CREATE if create_mode else self.EDIT
+        if not create_mode:  # Create
             self.un_highlight()
             self.de_select_shape()
         self.prev_point = QPointF()
