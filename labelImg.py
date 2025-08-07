@@ -1816,7 +1816,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.may_continue():
             self.load_file(filename)
 
-    def scan_all_images(self, folder_path):
+    @staticmethod
+    def scan_all_images(folder_path):
         extensions = [
             ".%s" % fmt.data().decode("ascii").lower()
             for fmt in QImageReader.supportedImageFormats()
