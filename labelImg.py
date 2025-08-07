@@ -16,6 +16,7 @@ from libs.combobox import ComboBox
 from libs.default_label_combobox import DefaultLabelComboBox
 from libs.resources import *
 from libs.constants import *
+from libs.structs import Actions, Menus
 from libs.utils import *
 from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
@@ -595,7 +596,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.draw_squares_option.triggered.connect(self.toggle_draw_square)
 
         # Store actions for further handling.
-        self.actions = Struct(
+        self.actions = Actions(
             save=save,
             save_format=save_format,
             saveAs=save_as,
@@ -633,8 +634,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 reset_all,
                 quit,
             ),
-            beginner=(),
-            advanced=(),
+            beginner=None,
+            advanced=None,
             editMenu=(
                 edit,
                 copy,
@@ -669,7 +670,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.autoAnnotateAllAction.setStatusTip("Automatically annotate ALL images using YOLO")
         self.autoAnnotateAllAction.triggered.connect(self.autoAnnotateAllImages)
 
-        self.menus = Struct(
+        self.menus = Menus(
             file=self.menu(get_str("menu_file")),
             edit=self.menu(get_str("menu_edit")),
             view=self.menu(get_str("menu_view")),
