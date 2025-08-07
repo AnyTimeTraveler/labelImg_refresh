@@ -218,10 +218,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dock.setFeatures(self.dock.features() ^ int(self.dock_features))
 
         # Actions
-        action = partial(new_action, self)
-        quit = action(get_str("quit"), self.close, "Ctrl+Q", "quit", get_str("quitApp"))
+        quit = new_action(
+            self, get_str("quit"), self.close, "Ctrl+Q", "quit", get_str("quitApp"))
 
-        open = action(
+        open = new_action(
+            self,
             get_str("openFile"),
             self.open_file,
             "Ctrl+O",
@@ -229,7 +230,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("openFileDetail"),
         )
 
-        open_dir = action(
+        open_dir = new_action(
+            self,
             get_str("openDir"),
             self.open_dir_dialog,
             "Ctrl+u",
@@ -237,7 +239,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("openDir"),
         )
 
-        change_save_dir = action(
+        change_save_dir = new_action(
+            self,
             get_str("changeSaveDir"),
             self.change_save_dir_dialog,
             "Ctrl+r",
@@ -245,14 +248,16 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("changeSavedAnnotationDir"),
         )
 
-        open_annotation = action(
+        open_annotation = new_action(
+            self,
             get_str("openAnnotation"),
             self.open_annotation_dialog,
             "Ctrl+Shift+O",
             "open",
             get_str("openAnnotationDetail"),
         )
-        copy_prev_bounding = action(
+        copy_prev_bounding = new_action(
+            self,
             get_str("copyPrevBounding"),
             self.copy_previous_bounding_boxes,
             "Ctrl+v",
@@ -260,7 +265,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("copyPrevBounding"),
         )
 
-        open_next_image = action(
+        open_next_image = new_action(
+            self,
             get_str("nextImg"),
             self.open_next_image,
             "d",
@@ -268,7 +274,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("nextImgDetail"),
         )
 
-        open_prev_image = action(
+        open_prev_image = new_action(
+            self,
             get_str("prevImg"),
             self.open_prev_image,
             "a",
@@ -276,7 +283,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("prevImgDetail"),
         )
 
-        verify = action(
+        verify = new_action(
+            self,
             get_str("verifyImg"),
             self.verify_image,
             "space",
@@ -284,7 +292,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("verifyImgDetail"),
         )
 
-        save = action(
+        save = new_action(
+            self,
             get_str("save"),
             self.save_file,
             "Ctrl+S",
@@ -304,7 +313,8 @@ class MainWindow(QMainWindow, WindowMixin):
             elif format == LabelFileFormat.CREATE_ML:
                 return "&CreateML", "format_createml"
 
-        save_format = action(
+        save_format = new_action(
+            self,
             get_format_meta(self.label_file_format)[0],
             self.change_format,
             "Ctrl+Y",
@@ -313,7 +323,8 @@ class MainWindow(QMainWindow, WindowMixin):
             enabled=True,
         )
 
-        save_as = action(
+        save_as = new_action(
+            self,
             get_str("saveAs"),
             self.save_file_as,
             "Ctrl+Shift+S",
@@ -322,7 +333,8 @@ class MainWindow(QMainWindow, WindowMixin):
             enabled=False,
         )
 
-        close = action(
+        close = new_action(
+            self,
             get_str("closeCur"),
             self.close_file,
             "Ctrl+W",
@@ -330,7 +342,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("closeCurDetail"),
         )
 
-        delete_image = action(
+        delete_image = new_action(
+            self,
             get_str("deleteImg"),
             self.delete_image,
             "Ctrl+Shift+D",
@@ -338,7 +351,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("deleteImgDetail"),
         )
 
-        reset_all = action(
+        reset_all = new_action(
+            self,
             get_str("resetAll"),
             self.reset_all,
             None,
@@ -346,7 +360,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("resetAllDetail"),
         )
 
-        color1 = action(
+        color1 = new_action(
+            self,
             get_str("boxLineColor"),
             self.choose_color1,
             "Ctrl+L",
@@ -354,7 +369,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("boxLineColorDetail"),
         )
 
-        create_mode = action(
+        create_mode = new_action(
+            self,
             get_str("crtBox"),
             self.set_create_mode,
             "w",
@@ -362,7 +378,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("crtBoxDetail"),
             enabled=False,
         )
-        edit_mode = action(
+        edit_mode = new_action(
+            self,
             get_str("editBox"),
             self.set_edit_mode,
             "Ctrl+J",
@@ -371,7 +388,8 @@ class MainWindow(QMainWindow, WindowMixin):
             enabled=False,
         )
 
-        create = action(
+        create = new_action(
+            self,
             get_str("crtBox"),
             self.create_shape,
             "w",
@@ -379,7 +397,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("crtBoxDetail"),
             enabled=False,
         )
-        delete = action(
+        delete = new_action(
+            self,
             get_str("delBox"),
             self.delete_selected_shape,
             "Delete",
@@ -387,7 +406,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("delBoxDetail"),
             enabled=False,
         )
-        copy = action(
+        copy = new_action(
+            self,
             get_str("dupBox"),
             self.copy_selected_shape,
             "Ctrl+D",
@@ -396,7 +416,8 @@ class MainWindow(QMainWindow, WindowMixin):
             enabled=False,
         )
 
-        advanced_mode = action(
+        advanced_mode = new_action(
+            self,
             get_str("advancedMode"),
             self.toggle_advanced_mode,
             "Ctrl+Shift+A",
@@ -405,7 +426,8 @@ class MainWindow(QMainWindow, WindowMixin):
             checkable=True,
         )
 
-        hide_all = action(
+        hide_all = new_action(
+            self,
             get_str("hideAllBox"),
             partial(self.toggle_polygons, False),
             "Ctrl+H",
@@ -413,7 +435,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("hideAllBoxDetail"),
             enabled=False,
         )
-        show_all = action(
+        show_all = new_action(
+            self,
             get_str("showAllBox"),
             partial(self.toggle_polygons, True),
             "Ctrl+A",
@@ -422,15 +445,18 @@ class MainWindow(QMainWindow, WindowMixin):
             enabled=False,
         )
 
-        help_default = action(
+        help_default = new_action(
+            self,
             get_str("tutorialDefault"),
             self.show_default_tutorial_dialog,
             None,
             "help",
             get_str("tutorialDetail"),
         )
-        show_info = action(get_str("info"), self.show_info_dialog, None, "help", get_str("info"))
-        show_shortcut = action(
+        show_info = new_action(
+            self, get_str("info"), self.show_info_dialog, None, "help", get_str("info"))
+        show_shortcut = new_action(
+            self,
             get_str("shortcut"),
             self.show_shortcuts_dialog,
             None,
@@ -447,7 +473,8 @@ class MainWindow(QMainWindow, WindowMixin):
         )
         self.zoom_widget.setEnabled(False)
 
-        zoom_in = action(
+        zoom_in = new_action(
+            self,
             get_str("zoomin"),
             partial(self.add_zoom, 10),
             "Ctrl++",
@@ -455,7 +482,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("zoominDetail"),
             enabled=False,
         )
-        zoom_out = action(
+        zoom_out = new_action(
+            self,
             get_str("zoomout"),
             partial(self.add_zoom, -10),
             "Ctrl+-",
@@ -463,7 +491,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("zoomoutDetail"),
             enabled=False,
         )
-        zoom_org = action(
+        zoom_org = new_action(
+            self,
             get_str("originalsize"),
             partial(self.set_zoom, 100),
             "Ctrl+=",
@@ -471,7 +500,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("originalsizeDetail"),
             enabled=False,
         )
-        fit_window = action(
+        fit_window = new_action(
+            self,
             get_str("fitWin"),
             self.set_fit_window,
             "Ctrl+F",
@@ -480,7 +510,8 @@ class MainWindow(QMainWindow, WindowMixin):
             checkable=True,
             enabled=False,
         )
-        fit_width = action(
+        fit_width = new_action(
+            self,
             get_str("fitWidth"),
             self.set_fit_width,
             "Ctrl+Shift+F",
@@ -518,7 +549,8 @@ class MainWindow(QMainWindow, WindowMixin):
         )
         self.light_widget.setEnabled(False)
 
-        light_brighten = action(
+        light_brighten = new_action(
+            self,
             get_str("lightbrighten"),
             partial(self.add_light, 10),
             "Ctrl+Shift++",
@@ -526,7 +558,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("lightbrightenDetail"),
             enabled=False,
         )
-        light_darken = action(
+        light_darken = new_action(
+            self,
             get_str("lightdarken"),
             partial(self.add_light, -10),
             "Ctrl+Shift+-",
@@ -534,7 +567,8 @@ class MainWindow(QMainWindow, WindowMixin):
             get_str("lightdarkenDetail"),
             enabled=False,
         )
-        light_org = action(
+        light_org = new_action(
+            self,
             get_str("lightreset"),
             partial(self.set_light, 50),
             "Ctrl+Shift+=",
@@ -553,7 +587,8 @@ class MainWindow(QMainWindow, WindowMixin):
             light_org,
         )
 
-        edit = action(
+        edit = new_action(
+            self,
             get_str("editLabel"),
             self.edit_label,
             "Ctrl+E",
@@ -563,14 +598,16 @@ class MainWindow(QMainWindow, WindowMixin):
         )
         self.edit_button.setDefaultAction(edit)
 
-        shape_line_color = action(
+        shape_line_color = new_action(
+            self,
             get_str("shapeLineColor"),
             self.choose_shape_line_color,
             icon="color_line",
             tip=get_str("shapeLineColorDetail"),
             enabled=False,
         )
-        shape_fill_color = action(
+        shape_fill_color = new_action(
+            self,
             get_str("shapeFillColor"),
             self.choose_shape_fill_color,
             icon="color",
@@ -749,8 +786,10 @@ class MainWindow(QMainWindow, WindowMixin):
         add_actions(
             self.canvas.menus[1],
             (
-                action("&Copy here", self.copy_shape),
-                action("&Move here", self.move_shape),
+                new_action(
+                    self, "&Copy here", self.copy_shape),
+                new_action(
+                    self, "&Move here", self.move_shape),
             ),
         )
 
