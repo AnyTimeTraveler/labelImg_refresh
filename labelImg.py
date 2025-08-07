@@ -1627,8 +1627,8 @@ class MainWindow(QMainWindow, WindowMixin):
         # Highlight the file item
         if unicode_file_path and self.file_list_widget.count() > 0:
             if unicode_file_path in self.m_img_list:
-                index = self.m_img_list.index(unicode_file_path)
-                file_widget_item = self.file_list_widget.item(index)
+                img_list_index = self.m_img_list.index(unicode_file_path)
+                file_widget_item = self.file_list_widget.item(img_list_index)
                 file_widget_item.setSelected(True)
             else:
                 self.file_list_widget.clear()
