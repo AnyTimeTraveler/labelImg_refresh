@@ -697,7 +697,6 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Auto-Annotate via yolo model
         self.autoAnnotateAction = QAction("Yolo Auto-Annotate", self)
-        self.autoAnnotateAction.setShortcut("Tab")
         self.autoAnnotateAction.setStatusTip("Automatically annotate using YOLO")
         self.autoAnnotateAction.triggered.connect(self.auto_annotate)
 
