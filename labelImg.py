@@ -103,7 +103,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dirty = False
 
         self._no_selection_slot = False
-        self._beginner = True
+        self._advanced_mode = False
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
         # Load predefined classes to the list
@@ -768,8 +768,8 @@ class MainWindow(QMainWindow, WindowMixin):
             None,
             self.autoAnnotateAction,
             None,
-            create_mode,
-            edit_mode,
+            create,
+            edit,
             None,
             hide_all,
             show_all,
@@ -789,7 +789,8 @@ class MainWindow(QMainWindow, WindowMixin):
             None,
             self.autoAnnotateAction,
             None,
-            create,
+            create_mode,
+            edit_mode,
             copy,
             delete,
             delete_image,
@@ -867,7 +868,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
             self.actions.advancedMode.setChecked(True)
-            self.toggle_advanced_mode()
+            self.toggle_advanced_mode(True)
+        else:
+            self.toggle_advanced_mode(False)
 
         # Populate the File menu dynamically.
         self.update_file_menu()
@@ -935,14 +938,16 @@ class MainWindow(QMainWindow, WindowMixin):
     def no_shapes(self):
         return not self.items_to_shapes
 
-    def toggle_advanced_mode(self, value=True):
-        self._beginner = not value
-        self.canvas.set_editing(True)
+    def toggle_advanced_mode(self, advanced_mode=None):
+        if advanced_mode is None:
+            advanced_mode = not self._advanced_mode
+        print(f"Advanced: {self._advanced_mode} -> {advanced_mode}")
+        self._advanced_mode = advanced_mode
+        self.canvas.set_creating(False)
         self.populate_mode_actions()
-        self.edit_button.setVisible(not value)
-        if value:
-            self.actions.createMode.setEnabled(True)
-            self.actions.editMode.setEnabled(False)
+        self.edit_button.setVisible(advanced_mode)
+        if advanced_mode:
+            self._set_create_mode(False)
             self.dock.setFeatures(self.dock.features() | self.dock_features)
         else:
             self.dock.setFeatures(self.dock.features() ^ self.dock_features)
@@ -1021,10 +1026,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.recent_files.insert(0, file_path)
 
     def beginner(self):
-        return self._beginner
+        return not self._advanced_mode
 
     def advanced(self):
-        return not self.beginner()
+        return self._advanced_mode
 
     def show_tutorial_dialog(self, browser="default", link=None):
         if link is None:
@@ -1068,7 +1073,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toggle_drawing_sensitive(self, drawing=True):
         """In the middle of drawing, toggling between modes should be disabled."""
-        self.actions.editMode.setEnabled(not drawing)
+        if self.advanced():
+            self.actions.editMode.setEnabled(drawing)
+
         if not drawing and self.beginner():
             # Cancel creation.
             print("Cancel creation.")
@@ -1460,6 +1467,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.canvas.set_editing(True)
                 self.actions.create.setEnabled(True)
             else:
+                self.actions.createMode.setEnabled(False)
                 self.actions.editMode.setEnabled(True)
             self.set_dirty()
 
@@ -1736,7 +1744,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_LINE_COLOR] = self.line_color
         settings[SETTING_FILL_COLOR] = self.fill_color
         settings[SETTING_RECENT_FILES] = self.recent_files
-        settings[SETTING_ADVANCE_MODE] = not self._beginner
+        settings[SETTING_ADVANCE_MODE] = self._advanced_mode
         if self.default_save_dir and os.path.exists(self.default_save_dir):
             settings[SETTING_SAVE_DIR] = ustr(self.default_save_dir)
         else:
