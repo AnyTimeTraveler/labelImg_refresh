@@ -1863,7 +1863,7 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             # Prevent application from closing when canceling the dialog
             self.status("Save directory change canceled", 2000)
-            return True
+            return
 
         if dir_path is not None and len(dir_path) > 1:
             self.default_save_dir = dir_path
@@ -1877,7 +1877,7 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             self.status("Select image folder first", 2000)
             self.statusBar().show()
-            return True
+            return
 
     def open_annotation_dialog(self, _value=False):
         if self.file_path is None:
@@ -2062,8 +2062,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 saved_path = os.path.join(ustr(self.default_save_dir), saved_file_name)
                 self._save_file(saved_path)
             else:
-                return True
-                # QMessageBox.warning(self, "Warning", "No file is currently loaded to save.")
+                QMessageBox.warning(self, "Warning", "No file is currently loaded to save.")
         else:
             if self.file_path:
                 image_file_dir = os.path.dirname(self.file_path)
@@ -2074,8 +2073,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     saved_path if self.label_file else self.save_file_dialog(remove_ext=False)
                 )
             else:
-                return True
-                # QMessageBox.warning(self, "Warning", "No file is currently loaded to save.")
+                QMessageBox.warning(self, "Warning", "No file is currently loaded to save.")
 
     def save_file_as(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
@@ -2119,7 +2117,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def delete_image(self):
         if not self.file_path:
             QMessageBox.warning(self, "Warning", "No image selected for deletion.")
-            return True
+            return
         else:
             delete_path = self.file_path
             idx = self.cur_img_idx
