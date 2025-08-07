@@ -38,7 +38,6 @@ from libs.ustr import ustr
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
 from libs.auto_annotate import YOLOAutoAnnotator
 
-
 __appname__ = "labelImg Refresh"
 
 
@@ -65,10 +64,10 @@ class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
 
     def __init__(
-        self,
-        default_filename=None,
-        default_prefdef_class_file=None,
-        default_save_dir=None,
+            self,
+            default_filename=None,
+            default_prefdef_class_file=None,
+            default_save_dir=None,
     ):
         super(MainWindow, self).__init__()
         self.image_data = None
@@ -1979,20 +1978,25 @@ class MainWindow(QMainWindow, WindowMixin):
             self.paint_canvas()
             self.save_file()
 
-    def open_prev_image(self, _value=False):
-        # Proceeding prev image without dialog if having any label
+    def is_okay_to_load_new_image(self) -> bool:
         if self.auto_saving.isChecked():
             if self.default_save_dir is not None:
-                if self.dirty is True:
+                if self.dirty:
                     self.save_file()
             else:
                 self.change_save_dir_dialog()
-                return
+                return False
 
         if not self.may_continue():
-            return
+            return False
 
         if self.img_count <= 0:
+            return False
+        return True
+
+    def open_prev_image(self, _value=False):
+        # Proceeding prev image without dialog if having any label
+        if not self.is_okay_to_load_new_image():
             return
 
         if self.file_path is None:
@@ -2006,18 +2010,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def open_next_image(self, _value=False):
         # Proceeding next image without dialog if having any label
-        if self.auto_saving.isChecked():
-            if self.default_save_dir is not None:
-                if self.dirty is True:
-                    self.save_file()
-            else:
-                self.change_save_dir_dialog()
-                return
-
-        if not self.may_continue():
-            return
-
-        if self.img_count <= 0:
+        if not self.is_okay_to_load_new_image():
             return
 
         if not self.m_img_list:
