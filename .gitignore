@@ -41,3 +41,6 @@ __pycache__/
 .unison*
 .attach*
 tmp.*
+
+# Don't accidentally commit yolo models
+/yolo_model/*.pt
