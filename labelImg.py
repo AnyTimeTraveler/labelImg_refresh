@@ -1619,10 +1619,9 @@ class MainWindow(QMainWindow, WindowMixin):
         if file_path is None:
             file_path = self.settings.get(SETTING_FILENAME)
         # Make sure that filePath is a regular python string, rather than QString
-        file_path = ustr(file_path)
+        unicode_file_path = ustr(file_path)
 
         # Fix bug: An  index error after select a directory when open a new file.
-        unicode_file_path = ustr(file_path)
         unicode_file_path = os.path.abspath(unicode_file_path)
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
