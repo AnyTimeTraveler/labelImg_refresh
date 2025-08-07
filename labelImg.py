@@ -8,13 +8,8 @@ import shutil
 import webbrowser as wb
 from functools import partial
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-
 from libs.combobox import ComboBox
 from libs.default_label_combobox import DefaultLabelComboBox
-from libs.resources import *
 from libs.constants import *
 from libs.structs import Actions, Menus
 from libs.utils import *
@@ -83,6 +78,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.os_name = platform.system()
 
         # Load string bundle for i18n
+
+        # This import is needed to load builtin resources
+        import libs.resources
+
         self.string_bundle = StringBundle.get_bundle()
         get_str = lambda str_id: self.string_bundle.get_string(str_id)
 
