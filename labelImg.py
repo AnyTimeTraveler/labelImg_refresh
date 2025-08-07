@@ -935,11 +935,11 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.file_path and os.path.isdir(self.file_path):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
-    def keyReleaseEvent(self, event):
+    def keyReleaseEvent(self, event, QKeyEvent=None):
         if event.key() == Qt.Key_Control:
             self.canvas.set_drawing_shape_to_square(False)
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event, QKeyEvent=None):
         if event.key() == Qt.Key_Control:
             # Draw rectangle if Ctrl is pressed
             self.canvas.set_drawing_shape_to_square(True)
@@ -1744,7 +1744,7 @@ class MainWindow(QMainWindow, WindowMixin):
             elif os.path.isfile(json_path):
                 self.load_create_ml_json_by_filename(json_path, file_path)
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event, QResizeEvent=None):
         if self.canvas and not self.image.isNull() and self.zoom_mode != self.MANUAL_ZOOM:
             self.adjust_scale()
         super(MainWindow, self).resizeEvent(event)
@@ -1778,7 +1778,7 @@ class MainWindow(QMainWindow, WindowMixin):
         w = self.centralWidget().width() - 2.0
         return w / self.canvas.pixmap.width()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event, QCloseEvent=None):
         if not self.may_continue():
             event.ignore()
         settings = self.settings
