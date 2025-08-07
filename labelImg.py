@@ -2223,7 +2223,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.set_dirty()
 
     def load_predefined_classes(self, predef_classes_file):
-        if os.path.exists(predef_classes_file) is True:
+        if os.path.exists(predef_classes_file):
             with codecs.open(predef_classes_file, "r", "utf8") as f:
                 for line in f:
                     line = line.strip()
@@ -2235,7 +2235,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def load_pascal_xml_by_filename(self, xml_path):
         if self.file_path is None:
             return
-        if os.path.isfile(xml_path) is False:
+        if not os.path.isfile(xml_path):
             return
 
         self.set_format(FORMAT_PASCALVOC)
@@ -2248,7 +2248,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def load_yolo_txt_by_filename(self, txt_path):
         if self.file_path is None:
             return
-        if os.path.isfile(txt_path) is False:
+        if not os.path.isfile(txt_path):
             return
 
         self.set_format(FORMAT_YOLO)
@@ -2262,7 +2262,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def load_create_ml_json_by_filename(self, json_path, file_path):
         if self.file_path is None:
             return
-        if os.path.isfile(json_path) is False:
+        if not os.path.isfile(json_path):
             return
 
         self.set_format(FORMAT_CREATEML)
