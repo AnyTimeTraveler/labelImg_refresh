@@ -302,16 +302,17 @@ class MainWindow(QMainWindow, WindowMixin):
             enabled=False,
         )
 
-        def get_format_meta(format):
+        def get_format_meta(label_format: int):
             """
             returns a tuple containing (title, icon_name) of the selected format
             """
-            if format == LabelFileFormat.PASCAL_VOC:
+            if label_format == LabelFileFormat.PASCAL_VOC:
                 return "&PascalVOC", "format_voc"
-            elif format == LabelFileFormat.YOLO:
+            elif label_format == LabelFileFormat.YOLO:
                 return "&YOLO", "format_yolo"
-            elif format == LabelFileFormat.CREATE_ML:
+            elif label_format == LabelFileFormat.CREATE_ML:
                 return "&CreateML", "format_createml"
+            assert False, "Invalid label format"
 
         save_format = new_action(
             self,
