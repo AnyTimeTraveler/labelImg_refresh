@@ -1657,7 +1657,7 @@ class MainWindow(QMainWindow, WindowMixin):
             else:
                 # Load image:
                 # read data first and store for saving into label file.
-                self.image_data = read(unicode_file_path, None)
+                self.image_data = self.read(unicode_file_path)
                 self.label_file = None
                 self.canvas.verified = False
 
@@ -1697,6 +1697,15 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.setFocus(True)
             return True
         return False
+
+    def read(self, filename):
+        try:
+            reader = QImageReader(filename)
+            reader.setAutoTransform(True)
+            return reader.read()
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to read file: {filename}\nError: {str(e)}")
+            return None
 
     def counter_str(self):
         """
@@ -2346,15 +2355,6 @@ class MainWindow(QMainWindow, WindowMixin):
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
-
-
-def read(filename, default=None):
-    try:
-        reader = QImageReader(filename)
-        reader.setAutoTransform(True)
-        return reader.read()
-    except:
-        return default
 
 
 def get_main_app(argv=None):
