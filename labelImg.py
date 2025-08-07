@@ -370,11 +370,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         create_mode = new_action(
             self,
-            get_str("crtBox"),
+            get_str("crtModeBox"),
             self.set_create_mode,
             "w",
             "new",
-            get_str("crtBoxDetail"),
+            get_str("crtModeBoxDetail"),
             enabled=False,
         )
         edit_mode = new_action(
