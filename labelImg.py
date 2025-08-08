@@ -380,7 +380,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self,
             self.get_str("editBox"),
             self.set_edit_mode,
-            "Ctrl+J",
+            "s",
             "edit",
             self.get_str("editBoxDetail"),
             enabled=False,
