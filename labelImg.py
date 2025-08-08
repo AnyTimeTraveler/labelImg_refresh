@@ -301,18 +301,20 @@ class MainWindow(QMainWindow, WindowMixin):
             """
             returns a tuple containing (title, icon_name) of the selected format
             """
-            if label_format == LabelFileFormat.PASCAL_VOC:
-                return "&PascalVOC", "format_voc"
-            elif label_format == LabelFileFormat.YOLO:
-                return "&YOLO", "format_yolo"
-            elif label_format == LabelFileFormat.CREATE_ML:
-                return "&CreateML", "format_createml"
-            assert False, "Invalid label format"
+            match label_format:
+                case LabelFileFormat.PASCAL_VOC:
+                    return "&PascalVOC", "format_voc"
+                case LabelFileFormat.YOLO:
+                    return "&YOLO", "format_yolo"
+                case LabelFileFormat.CREATE_ML:
+                    return "&CreateML", "format_createml"
+                case _:
+                    raise ValueError("Unknown label file format.")
 
         a_label_format_change = new_action(
             self,
             get_format_meta(self.label_file_format)[0],
-            self.change_format,
+            self.cycle_label_formats,
             "Ctrl+Y",
             get_format_meta(self.label_file_format)[1],
             self.get_str("changeSaveFormat"),
@@ -948,34 +950,22 @@ class MainWindow(QMainWindow, WindowMixin):
         return self.string_bundle.get_string(text_id)
 
     # Support Functions #
-    def set_format(self, label_format):
-        if label_format == FORMAT_PASCALVOC:
-            self.actions.a_label_format_change.setText(FORMAT_PASCALVOC)
-            self.actions.a_label_format_change.setIcon(new_icon("format_voc"))
-            self.label_file_format = LabelFileFormat.PASCAL_VOC
-            LabelFile.suffix = XML_EXT
+    def set_format(self, label_format: LabelFileFormat):
+        self.label_file_format = label_format
+        self.actions.a_label_format_change.setText(self.get_str(label_format.resource_id()))
+        self.actions.a_label_format_change.setIcon(new_icon(label_format.resource_id()))
+        LabelFile.suffix = label_format.extension()
 
-        elif label_format == FORMAT_YOLO:
-            self.actions.a_label_format_change.setText(FORMAT_YOLO)
-            self.actions.a_label_format_change.setIcon(new_icon("format_yolo"))
-            self.label_file_format = LabelFileFormat.YOLO
-            LabelFile.suffix = TXT_EXT
-
-        elif label_format == FORMAT_CREATEML:
-            self.actions.a_label_format_change.setText(FORMAT_CREATEML)
-            self.actions.a_label_format_change.setIcon(new_icon("format_createml"))
-            self.label_file_format = LabelFileFormat.CREATE_ML
-            LabelFile.suffix = JSON_EXT
-
-    def change_format(self):
-        if self.label_file_format == LabelFileFormat.PASCAL_VOC:
-            self.set_format(FORMAT_YOLO)
-        elif self.label_file_format == LabelFileFormat.YOLO:
-            self.set_format(FORMAT_CREATEML)
-        elif self.label_file_format == LabelFileFormat.CREATE_ML:
-            self.set_format(FORMAT_PASCALVOC)
-        else:
-            raise ValueError("Unknown label file format.")
+    def cycle_label_formats(self):
+        match self.label_file_format:
+            case LabelFileFormat.PASCAL_VOC:
+                self.set_format(LabelFileFormat.YOLO)
+            case LabelFileFormat.YOLO:
+                self.set_format(LabelFileFormat.CREATE_ML)
+            case LabelFileFormat.CREATE_ML:
+                self.set_format(LabelFileFormat.PASCAL_VOC)
+            case _:
+                self.set_format(LabelFileFormat.YOLO)
         self.set_dirty()
 
     def no_shapes(self):
@@ -1389,50 +1379,44 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Can add different annotation formats here
         try:
-            if self.label_file_format == LabelFileFormat.PASCAL_VOC:
-                if annotation_file_path[-4:].lower() != XML_EXT:
-                    annotation_file_path += XML_EXT
-                self.label_file.save_pascal_voc_format(
-                    annotation_file_path,
-                    shapes,
-                    self.file_path,
-                    self.image_data,
-                    self.line_color.getRgb(),
-                    self.fill_color.getRgb(),
-                )
-            elif self.label_file_format == LabelFileFormat.YOLO:
-                if annotation_file_path[-4:].lower() != TXT_EXT:
-                    annotation_file_path += TXT_EXT
-                self.label_file.save_yolo_format(
-                    annotation_file_path,
-                    shapes,
-                    self.file_path,
-                    self.image_data,
-                    self.label_hist,
-                    self.line_color.getRgb(),
-                    self.fill_color.getRgb(),
-                )
-            elif self.label_file_format == LabelFileFormat.CREATE_ML:
-                if annotation_file_path[-5:].lower() != JSON_EXT:
-                    annotation_file_path += JSON_EXT
-                self.label_file.save_create_ml_format(
-                    annotation_file_path,
-                    shapes,
-                    self.file_path,
-                    self.image_data,
-                    self.label_hist,
-                    self.line_color.getRgb(),
-                    self.fill_color.getRgb(),
-                )
-            else:
-                self.label_file.save(
-                    annotation_file_path,
-                    shapes,
-                    self.file_path,
-                    self.image_data,
-                    self.line_color.getRgb(),
-                    self.fill_color.getRgb(),
-                )
+            match self.label_file_format:
+                case LabelFileFormat.PASCAL_VOC:
+                    if annotation_file_path[-4:].lower() != XML_EXT:
+                        annotation_file_path += XML_EXT
+                    self.label_file.save_pascal_voc_format(
+                        annotation_file_path,
+                        shapes,
+                        self.file_path,
+                        self.image_data,
+                        self.line_color.getRgb(),
+                        self.fill_color.getRgb(),
+                    )
+                case LabelFileFormat.YOLO:
+                    if annotation_file_path[-4:].lower() != TXT_EXT:
+                        annotation_file_path += TXT_EXT
+                    self.label_file.save_yolo_format(
+                        annotation_file_path,
+                        shapes,
+                        self.file_path,
+                        self.image_data,
+                        self.label_hist,
+                        self.line_color.getRgb(),
+                        self.fill_color.getRgb(),
+                    )
+                case LabelFileFormat.CREATE_ML:
+                    if annotation_file_path[-5:].lower() != JSON_EXT:
+                        annotation_file_path += JSON_EXT
+                    self.label_file.save_create_ml_format(
+                        annotation_file_path,
+                        shapes,
+                        self.file_path,
+                        self.image_data,
+                        self.label_hist,
+                        self.line_color.getRgb(),
+                        self.fill_color.getRgb(),
+                    )
+                case _:
+                    raise ValueError(f"Unknown label file format: {self.label_file_format}")
             print(
                 "Image: {0} -> Annotation: {1} \nShapes: {2}".format(
                     os.path.basename(self.file_path), os.path.basename(annotation_file_path), shapes
@@ -1888,51 +1872,50 @@ class MainWindow(QMainWindow, WindowMixin):
             return
 
         path = os.path.dirname(ustr(self.file_path)) if self.file_path else "."
-        if self.label_file_format == LabelFileFormat.PASCAL_VOC:
-            filters = "Open Annotation XML file (%s)" % " ".join(["*.xml"])
-            filename = ustr(
-                QFileDialog.getOpenFileName(
-                    self, "%s - Choose a xml file" % __appname__, path, filters
+        match self.label_file_format:
+            case LabelFileFormat.PASCAL_VOC:
+                filters = "Open Annotation XML file (%s)" % " ".join(["*.xml"])
+                filename = ustr(
+                    QFileDialog.getOpenFileName(
+                        self, "%s - Choose a xml file" % __appname__, path, filters
+                    )
                 )
-            )
-            if filename:
-                if isinstance(filename, (tuple, list)):
-                    filename = filename[0]
-            self.load_pascal_xml_by_filename(filename)
-
-        elif self.label_file_format == LabelFileFormat.CREATE_ML:
-
-            filters = "Open Annotation JSON file (%s)" % " ".join(["*.json"])
-            filename = ustr(
-                QFileDialog.getOpenFileName(
-                    self, "%s - Choose a json file" % __appname__, path, filters
+                if filename:
+                    if isinstance(filename, (tuple, list)):
+                        filename = filename[0]
+                self.load_pascal_xml_by_filename(filename)
+            case LabelFileFormat.YOLO:
+                filters = "Open Annotation TXT file (%s)" % " ".join(["*.txt"])
+                filename = ustr(
+                    QFileDialog.getOpenFileName(
+                        self, "%s - Choose a txt file" % __appname__, path, filters
+                    )
                 )
-            )
-            if filename:
-                if isinstance(filename, (tuple, list)):
-                    filename = filename[0]
+                if filename:
+                    if isinstance(filename, (tuple, list)):
+                        filename = filename[0]
 
-            self.load_create_ml_json_by_filename(filename, self.file_path)
-
-        elif self.label_file_format == LabelFileFormat.YOLO:
-
-            filters = "Open Annotation TXT file (%s)" % " ".join(["*.txt"])
-            filename = ustr(
-                QFileDialog.getOpenFileName(
-                    self, "%s - Choose a txt file" % __appname__, path, filters
+                self.load_yolo_txt_by_filename(filename)
+            case LabelFileFormat.CREATE_ML:
+                filters = "Open Annotation JSON file (%s)" % " ".join(["*.json"])
+                filename = ustr(
+                    QFileDialog.getOpenFileName(
+                        self, "%s - Choose a json file" % __appname__, path, filters
+                    )
                 )
-            )
-            if filename:
-                if isinstance(filename, (tuple, list)):
-                    filename = filename[0]
+                if filename:
+                    if isinstance(filename, (tuple, list)):
+                        filename = filename[0]
 
-            self.load_yolo_txt_by_filename(filename)
+                self.load_create_ml_json_by_filename(filename, self.file_path)
 
     def open_dir_dialog(self, _value=False, dir_path=None, silent=False):
         if not self.may_continue():
             return
 
-        if self.last_open_dir and os.path.exists(self.last_open_dir):
+        if dir_path is not None:
+            default_open_dir_path = dir_path
+        elif self.last_open_dir and os.path.exists(self.last_open_dir):
             default_open_dir_path = self.last_open_dir
         else:
             default_open_dir_path = os.path.dirname(self.file_path) if self.file_path else "."
@@ -2267,7 +2250,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if not os.path.isfile(xml_path):
             return False
 
-        self.set_format(FORMAT_PASCALVOC)
+        self.set_format(LabelFileFormat.PASCAL_VOC)
 
         t_voc_parse_reader = PascalVocReader(xml_path)
         shapes = t_voc_parse_reader.get_shapes()
@@ -2285,7 +2268,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if not os.path.isfile(txt_path):
             return False
 
-        self.set_format(FORMAT_YOLO)
+        self.set_format(LabelFileFormat.YOLO)
         t_yolo_parse_reader = YoloReader(txt_path, self.image, self.default_prefdef_class_file)
         shapes = t_yolo_parse_reader.get_shapes()
 
@@ -2303,7 +2286,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if not os.path.isfile(json_path):
             return False
 
-        self.set_format(FORMAT_CREATEML)
+        self.set_format(LabelFileFormat.CREATE_ML)
 
         create_ml_parse_reader = CreateMLReader(json_path, file_path)
         shapes = create_ml_parse_reader.get_shapes()

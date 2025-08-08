@@ -6,10 +6,9 @@ from PyQt5.QtGui import QImage
 import os.path
 from enum import Enum
 
-from libs.create_ml_io import CreateMLWriter
-from libs.pascal_voc_io import PascalVocWriter
-from libs.pascal_voc_io import XML_EXT
-from libs.yolo_io import YOLOWriter
+from libs.create_ml_io import CreateMLWriter, JSON_EXT
+from libs.pascal_voc_io import PascalVocWriter, XML_EXT
+from libs.yolo_io import YOLOWriter, TXT_EXT
 
 
 class LabelFileFormat(Enum):
@@ -17,6 +16,27 @@ class LabelFileFormat(Enum):
     YOLO = 2
     CREATE_ML = 3
 
+    def resource_id(self):
+        match self:
+            case LabelFileFormat.PASCAL_VOC:
+                return "format_voc"
+            case LabelFileFormat.YOLO:
+                return "format_yolo"
+            case LabelFileFormat.CREATE_ML:
+                return "format_createml"
+            case _:
+                raise ValueError("Unknown label file format.")
+
+    def extension(self):
+        match self:
+            case LabelFileFormat.PASCAL_VOC:
+                return XML_EXT
+            case LabelFileFormat.YOLO:
+                return TXT_EXT
+            case LabelFileFormat.CREATE_ML:
+                return JSON_EXT
+            case _:
+                raise ValueError("Unknown label file format.")
 
 class LabelFileError(Exception):
     pass
