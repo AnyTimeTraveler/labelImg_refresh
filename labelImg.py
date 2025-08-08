@@ -87,12 +87,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.label_file_format = settings.get(SETTING_LABEL_FILE_FORMAT, LabelFileFormat.PASCAL_VOC)
 
         # For loading all image under a directory
-        self.m_img_list = []
+        self.img_list = []
         self.dir_name = None
         self.label_hist = []
         self.last_open_dir = None
         self.cur_img_idx = 0
-        self.img_count = len(self.m_img_list)
 
         # Whether we need to save or not.
         self.dirty = False
@@ -1186,8 +1185,8 @@ class MainWindow(QMainWindow, WindowMixin):
         item = self.file_list_widget.currentItem()
         if item is None:
             return
-        self.cur_img_idx = self.m_img_list.index(ustr(item.text()))
-        filename = self.m_img_list[self.cur_img_idx]
+        self.cur_img_idx = self.img_list.index(ustr(item.text()))
+        filename = self.img_list[self.cur_img_idx]
         if filename:
             self.load_file(filename)
         self.file_list_widget.setFocus()
@@ -1198,18 +1197,35 @@ class MainWindow(QMainWindow, WindowMixin):
         if not idx_text.isdigit():
             self.status("Enter the index number in the window above", 6000)
             return
-        self.cur_img_idx = int(idx_text) - 1
+        new_img_idx = int(idx_text) - 1
 
-        if not self.m_img_list:
+        if self._jump_to_image_index(new_img_idx):
+            self.idx_text_box.setText("")
+
+    def _jump_to_image_index(self, index: int) -> bool:
+        """
+        Returns True if the image index was changed, False otherwise.
+        """
+        if self.is_image_list_empty():
             self.status("Select image folder first", 6000)
-            return
-        if self.cur_img_idx < 0 or self.cur_img_idx >= len(self.m_img_list):
-            return
+            return False
+        if index < 0 or index >= len(self.img_list):
+            return False
 
-        filename = self.m_img_list[self.cur_img_idx]
-        if filename:
-            self.load_file(filename)
-        self.idx_text_box.setText("")
+        if self.img_list[index] is None:
+            return False
+
+        self.cur_img_idx = index
+        # Triggers selection handler
+        # which calls `self.file_item_selected()`
+        # which actually loads the image.
+        # This is a workaround, since I could not disable the selection trigger.
+        self.file_list_widget.setCurrentRow(self.cur_img_idx)
+
+        return True
+
+    def is_image_list_empty(self):
+        return self.img_list is None or len(self.img_list) == 0
 
     # Add chris
     def button_state(self, item=None):
@@ -1615,13 +1631,13 @@ class MainWindow(QMainWindow, WindowMixin):
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
         if unicode_file_path and self.file_list_widget.count() > 0:
-            if unicode_file_path in self.m_img_list:
-                img_list_index = self.m_img_list.index(unicode_file_path)
+            if unicode_file_path in self.img_list:
+                img_list_index = self.img_list.index(unicode_file_path)
                 file_widget_item = self.file_list_widget.item(img_list_index)
                 file_widget_item.setSelected(True)
             else:
                 self.file_list_widget.clear()
-                self.m_img_list.clear()
+                self.img_list.clear()
 
         if unicode_file_path and os.path.exists(unicode_file_path):
             if LabelFile.is_label_file(unicode_file_path):
@@ -1691,7 +1707,7 @@ class MainWindow(QMainWindow, WindowMixin):
         """
         Converts image counter to string representation.
         """
-        return "[{} / {}]".format(self.cur_img_idx + 1, self.img_count)
+        return "[{} / {}]".format(self.cur_img_idx + 1, len(self.img_list))
 
     def show_bounding_box_from_annotation_file(self, file_path) -> bool:
         """
@@ -1962,10 +1978,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dir_name = dir_path
         self.file_path = None
         self.file_list_widget.clear()
-        self.m_img_list = self.scan_all_images(dir_path)
-        self.img_count = len(self.m_img_list)
+        self.img_list = self.scan_all_images(dir_path)
         self.open_next_image()
-        for imgPath in self.m_img_list:
+        for imgPath in self.img_list:
             item = QListWidgetItem(imgPath)
             self.file_list_widget.addItem(item)
 
@@ -1999,7 +2014,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.may_continue():
             return False
 
-        if self.img_count <= 0:
+        if self.is_image_list_empty():
             return False
         return True
 
@@ -2008,34 +2023,14 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.is_okay_to_load_new_image():
             return
 
-        if self.file_path is None:
-            return
-
-        if self.cur_img_idx - 1 >= 0:
-            self.cur_img_idx -= 1
-            filename = self.m_img_list[self.cur_img_idx]
-            if filename:
-                self.load_file(filename)
+        self._jump_to_image_index(self.cur_img_idx - 1)
 
     def open_next_image(self, _value=False):
         # Proceeding next image without dialog if having any label
         if not self.is_okay_to_load_new_image():
             return
 
-        if not self.m_img_list:
-            return
-
-        filename = None
-        if self.file_path is None:
-            filename = self.m_img_list[0]
-            self.cur_img_idx = 0
-        else:
-            if self.cur_img_idx + 1 < self.img_count:
-                self.cur_img_idx += 1
-                filename = self.m_img_list[self.cur_img_idx]
-
-        if filename:
-            self.load_file(filename)
+        self._jump_to_image_index(self.cur_img_idx + 1)
 
     def open_file(self, _value=False):
         if not self.may_continue():
@@ -2053,7 +2048,6 @@ class MainWindow(QMainWindow, WindowMixin):
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
             self.cur_img_idx = 0
-            self.img_count = 1
             self.load_file(filename)
 
     def save_labels_file(self, _value=False):
@@ -2145,9 +2139,9 @@ class MainWindow(QMainWindow, WindowMixin):
                         QMessageBox.warning(self, "Error", f"Failed to delete label file: {str(e)}")
 
             self.import_dir_images(self.last_open_dir)
-            if self.img_count > 0:
-                self.cur_img_idx = min(idx, self.img_count - 1)
-                filename = self.m_img_list[self.cur_img_idx]
+            if len(self.img_list) > 0:
+                self.cur_img_idx = min(idx, len(self.img_list) - 1)
+                filename = self.img_list[self.cur_img_idx]
                 self.load_file(filename)
             else:
                 self.close_file()
@@ -2294,9 +2288,9 @@ class MainWindow(QMainWindow, WindowMixin):
         return True
 
     def copy_previous_bounding_boxes(self):
-        current_index = self.m_img_list.index(self.file_path)
+        current_index = self.img_list.index(self.file_path)
         if current_index - 1 >= 0:
-            prev_file_path = self.m_img_list[current_index - 1]
+            prev_file_path = self.img_list[current_index - 1]
             self.show_bounding_box_from_annotation_file(prev_file_path)
             self.save_labels_file()
 
@@ -2335,7 +2329,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.set_dirty()
 
     def auto_annotate_all_images(self):
-        if not self.m_img_list:
+        if not self.img_list:
             QMessageBox.information(self, "No Images", "No images loaded.")
             return
 
@@ -2345,7 +2339,7 @@ class MainWindow(QMainWindow, WindowMixin):
             QMessageBox.warning(self, "Model Not Found", str(e))
             return
 
-        for index, imgPath in enumerate(self.m_img_list):
+        for index, imgPath in enumerate(self.img_list):
             self.file_path = imgPath
             self.load_file(imgPath)
 
