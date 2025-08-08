@@ -2262,7 +2262,6 @@ class MainWindow(QMainWindow, WindowMixin):
         """
         Returns True if the file is successfully loaded.
         """
-        print(f"Loading YOLO txt file 1: {txt_path}")
         if self.file_path is None:
             return False
         if not os.path.isfile(txt_path):
