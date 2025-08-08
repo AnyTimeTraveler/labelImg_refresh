@@ -7,7 +7,9 @@ import sys
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+
 QT5 = True
+
 
 def new_icon(icon):
     return QIcon(':/' + icon)
@@ -25,6 +27,12 @@ def new_button(text, icon=None, slot=None):
 def new_action(parent, text, slot=None, shortcut=None, icon=None,
                tip=None, checkable=False, enabled=True) -> QAction:
     """Create a new action and assign callbacks, shortcuts, etc."""
+    if shortcut is not None:
+        if tip is None:
+            tip = format_shortcut(shortcut)
+        else:
+            tip = f"{tip} ({format_shortcut(shortcut)})"
+
     a = QAction(text, parent)
     if icon is not None:
         a.setIcon(new_icon(icon))
@@ -57,13 +65,20 @@ def add_actions(widget: QMenu, actions):
 def label_validator():
     return QRegExpValidator(QRegExp(r'^[^ \t].+'), None)
 
+
 def distance(p):
     return sqrt(p.x() * p.x() + p.y() * p.y())
 
 
-def format_shortcut(text):
-    mod, key = text.split('+', 1)
-    return '<b>%s</b>+<b>%s</b>' % (mod, key)
+def format_shortcut(text: str) -> str:
+    if "+" not in text:
+        return f"<b>{text}</b>"
+    else:
+        return "+".join(
+            map(lambda key: f"<b>{key}</b>",
+                text.split('+')
+                )
+        )
 
 
 def generate_color_by_text(text: str):
@@ -84,15 +99,18 @@ def util_qt_strlistclass():
     return list if not have_qstring() else QStringList
 
 
-def natural_sort(list, key=lambda s:s):
+def natural_sort(list, key=lambda s: s):
     """
     Sort the list into natural alphanumeric order.
     """
+
     def get_alphanum_key_func(key):
         convert = lambda text: int(text) if text.isdigit() else text
         return lambda s: [convert(c) for c in re.split('([0-9]+)', key(s))]
+
     sort_key = get_alphanum_key_func(key)
     list.sort(key=sort_key)
+
 
 # QT4 has a trimmed method, in QT5 this is called strip
 if QT5:
