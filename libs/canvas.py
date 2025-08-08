@@ -1,6 +1,9 @@
+from typing import Optional
+
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from typing_extensions import override
 
 from libs.shape import Shape
 from libs.utils import distance
@@ -40,7 +43,7 @@ class Canvas(QWidget):
         self.scale = 1.0
         self.overlay_color = None
         self.label_font_size = 8
-        self.pixmap = QPixmap()
+        self.pixmap: Optional[QPixmap] = QPixmap()
         self.visible = {}
         self._hide_background = False
         self.hide_background = False
@@ -98,8 +101,11 @@ class Canvas(QWidget):
     def selected_vertex(self):
         return self.h_vertex is not None
 
-    def mouseMoveEvent(self, ev):
+    def mouseMoveEvent(self, ev: Optional[QMouseEvent], QMouseEvent=None):
         """Update line with last point and current coordinates."""
+        if ev is None:
+            return
+
         pos = self.transform_pos(ev.pos())
 
         # Update coordinates in status bar if image is opened
@@ -244,7 +250,10 @@ class Canvas(QWidget):
             self.h_vertex, self.h_shape = None, None
             self.override_cursor(CURSOR_DEFAULT)
 
-    def mousePressEvent(self, ev):
+    def mousePressEvent(self, ev: Optional[QMouseEvent], QMouseEvent=None):
+        if ev is None:
+            return
+
         pos = self.transform_pos(ev.pos())
 
         if ev.button() == Qt.LeftButton:
@@ -258,7 +267,6 @@ class Canvas(QWidget):
                     index = self.h_shape.nearest_vertex(pos, self.epsilon) if self.h_shape else None
                     if index is not None:
                         self.h_vertex = index
-                        self.h_shape = self.h_shape
                         self.repaint()
                     else:
                         QApplication.setOverrideCursor(QCursor(Qt.OpenHandCursor))
@@ -269,7 +277,10 @@ class Canvas(QWidget):
             self.prev_point = pos
         self.update()
 
-    def mouseReleaseEvent(self, ev):
+    def mouseReleaseEvent(self, ev: Optional[QMouseEvent], QMouseEvent=None):
+        if ev is None:
+            return
+
         if ev.button() == Qt.RightButton:
             menu = self.menus[bool(self.selected_shape_copy)]
             self.restore_cursor()
@@ -340,7 +351,10 @@ class Canvas(QWidget):
     def can_close_shape(self):
         return self.drawing() and self.current and len(self.current) > 2
 
-    def mouseDoubleClickEvent(self, ev):
+    def mouseDoubleClickEvent(self, ev: Optional[QMouseEvent], QMouseEvent=None):
+        if ev is None:
+            return
+
         # We need at least 4 points here, since the mousePress handler
         # adds an extra one before this handler is called.
         if self.can_close_shape() and len(self.current) > 3:
@@ -467,6 +481,7 @@ class Canvas(QWidget):
             self.selected_shape = None
             self.update()
             return shape
+        return None
 
     def copy_selected_shape(self):
         if self.selected_shape:
@@ -477,6 +492,7 @@ class Canvas(QWidget):
             self.selected_shape = shape
             self.bounded_shift_shape(shape)
             return shape
+        return None
 
     def bounded_shift_shape(self, shape):
         # Try to move in one direction, and if it fails in another.
@@ -488,8 +504,8 @@ class Canvas(QWidget):
         if not self.bounded_move_shape(shape, point - offset):
             self.bounded_move_shape(shape, point + offset)
 
-    def paintEvent(self, event):
-        if not self.pixmap:
+    def paintEvent(self, event: Optional[QPaintEvent], QPaintEvent=None):
+        if self.pixmap is None:
             return super(Canvas, self).paintEvent(event)
 
         p = self._painter
@@ -598,7 +614,10 @@ class Canvas(QWidget):
             return self.scale * self.pixmap.size()
         return super(Canvas, self).minimumSizeHint()
 
-    def wheelEvent(self, ev):
+    def wheelEvent(self, ev: Optional[QWheelEvent]):
+        if ev is None:
+            return
+
         qt_version = 4 if hasattr(ev, "delta") else 5
         if qt_version == 4:
             if ev.orientation() == Qt.Vertical:
@@ -613,16 +632,25 @@ class Canvas(QWidget):
             v_delta = delta.y()
 
         mods = ev.modifiers()
-        if int(Qt.ControlModifier) | int(Qt.ShiftModifier) == int(mods) and v_delta:
-            self.lightRequest.emit(v_delta)
-        elif Qt.ControlModifier == int(mods) and v_delta:
-            self.zoomRequest.emit(v_delta)
-        else:
-            v_delta and self.scrollRequest.emit(v_delta, Qt.Vertical)
-            h_delta and self.scrollRequest.emit(h_delta, Qt.Horizontal)
+        if v_delta:
+            if int(Qt.ControlModifier) | int(Qt.ShiftModifier) == int(mods):
+                self.lightRequest.emit(v_delta)
+            elif Qt.ShiftModifier == int(mods):
+                self.scrollRequest.emit(v_delta, Qt.Horizontal)
+            elif Qt.ControlModifier == int(mods):
+                self.zoomRequest.emit(v_delta)
+            else:
+                self.scrollRequest.emit(v_delta, Qt.Vertical)
+
+        if h_delta:
+            self.scrollRequest.emit(h_delta, Qt.Horizontal)
+
         ev.accept()
 
-    def keyPressEvent(self, ev):
+    def keyPressEvent(self, ev: Optional[QKeyEvent], QKeyEvent=None):
+        if ev is None:
+            return
+
         key = ev.key()
         if key == Qt.Key_Escape and self.current:
             print('ESC press')
