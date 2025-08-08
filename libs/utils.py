@@ -66,7 +66,7 @@ def format_shortcut(text):
     return '<b>%s</b>+<b>%s</b>' % (mod, key)
 
 
-def generate_color_by_text(text):
+def generate_color_by_text(text: str):
     s = ustr(text)
     hash_code = int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16)
     r = int((hash_code / 255) % 255)

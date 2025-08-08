@@ -44,3 +44,4 @@ tmp.*
 
 # Don't accidentally commit yolo models
 /yolo_model/*.pt
+/yolo_model_available/

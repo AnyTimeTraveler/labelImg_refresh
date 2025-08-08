@@ -12,12 +12,14 @@ from libs.ustr import ustr
 
 from PyQt5.QtCore import *
 
-class StringBundle:
+PROP_SEPERATOR = '='
 
+
+class StringBundle:
     __create_key = object()
 
     def __init__(self, create_key, locale_str):
-        assert(create_key == StringBundle.__create_key), "StringBundle must be created using StringBundle.getBundle"
+        assert (create_key == StringBundle.__create_key), "StringBundle must be created using StringBundle.getBundle"
         self.id_to_message = {}
         paths = self.__create_lookup_fallback_list(locale_str)
         for path in paths:
@@ -36,10 +38,11 @@ class StringBundle:
         return StringBundle(cls.__create_key, locale_str)
 
     def get_string(self, string_id):
-        assert(string_id in self.id_to_message), "Missing string id : " + string_id
+        assert (string_id in self.id_to_message), "Missing string id : " + string_id
         return self.id_to_message[string_id]
 
-    def __create_lookup_fallback_list(self, locale_str):
+    @staticmethod
+    def __create_lookup_fallback_list(locale_str):
         result_paths = []
         base_path = ":/strings"
         result_paths.append(base_path)
@@ -53,7 +56,6 @@ class StringBundle:
         return result_paths
 
     def __load_bundle(self, path):
-        PROP_SEPERATOR = '='
         f = QFile(path)
         if f.exists():
             if f.open(QIODevice.ReadOnly | QFile.Text):

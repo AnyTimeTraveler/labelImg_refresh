@@ -55,7 +55,7 @@ class YOLOWriter:
         if class_list is None:
             class_list = []
         if target_file is None:
-            target_file = self.filename + '.txt'
+            target_file = self.filename + TXT_EXT
 
         assert len(class_list) != list(set(class_list)), f"class_list does not have unique values: {class_list}"
 
